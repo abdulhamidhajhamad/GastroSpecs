@@ -103,9 +103,16 @@ products/<productId>/<random>.webp
 
 ## Data model
 
-- `categories` is a two-level tree (`parentId`). Products attach to a subcategory.
-- `business_types` ↔ `products` is many-to-many through `product_business_types`, whose `sortOrder` orders a venue's page.
+- `categories` is a two-level tree (`parentId`). Products attach to a subcategory. Main categories carry
+  `codePrefix` (e.g. `FRY`), the middle of our product codes.
+- `business_types` ↔ `categories` through `business_type_categories`: the subcategories a venue's page shows.
+- `products` has our own `code` (`GS-FRY-0001`), key specs as columns (dimensions, weight, energy, gas types,
+  kW, voltage, phases, Hz, amps, certifications) and `displayRank` (higher shows first in a category).
 - `product_variants` holds sizes (cooking line 90 / 120 / 150). `product_images` holds photos.
+- `suppliers` (with `notes`) and their people in `supplier_contacts`. Admin-only, never shown on the site.
+- `supplier_products` links a product to every supplier that makes it: their model code, our cost
+  (`priceAmount` in cents, optional) and the catalog page. A product appears once on the site however many
+  suppliers it has.
 - `leads` records who downloaded a catalog or asked for a quote.
 
 ## Adding a feature

@@ -64,7 +64,8 @@ export class PrismaCatalogRepository implements CatalogRepository {
     // Categories are two levels deep, so "the category or its parent" covers both cases without recursion.
     const rows = await this.prisma.product.findMany({
       where: { published: true, category: { OR: [{ slug }, { parent: { slug } }] } },
-      orderBy: { nameEn: "asc" },
+      // Biggest, most powerful machines first; the name only breaks ties.
+      orderBy: [{ displayRank: "desc" }, { nameEn: "asc" }],
       include: productInclude,
     });
     return rows.map(this.map.toProduct);
