@@ -1,0 +1,30 @@
+# Safety net for the whole repo. front/ and Backend/ also have their own .gitignore.
+
+# Secrets: every env file, anywhere. Templates (.env.example, .env.local.example) are kept.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Dependencies and build output
+node_modules/
+dist/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+
+# Private keys and certificates
+*.pem
+*.key
+
+# Local tool settings (may hold personal paths or tokens)
+.claude/settings.local.json
+.vercel/
+.perf-check/
