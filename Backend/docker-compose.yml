@@ -1,0 +1,43 @@
+# Local development stack: Postgres + API.
+# Start just the DB with:  docker compose up -d db
+# Start everything with:   docker compose up
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gastrospecs-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gastrospecs
+      POSTGRES_PASSWORD: gastrospecs
+      POSTGRES_DB: gastrospecs
+    ports:
+      - "5432:5432"
+    volumes:
+      - gastrospecs_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gastrospecs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: gastrospecs-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      # Container-to-container URL — uses the service name "db", not localhost.
+      DATABASE_URL: postgresql://gastrospecs:gastrospecs@db:5432/gastrospecs?schema=public
+      DIRECT_URL: postgresql://gastrospecs:gastrospecs@db:5432/gastrospecs?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "4000:4000"
+
+volumes:
+  gastrospecs_db:
