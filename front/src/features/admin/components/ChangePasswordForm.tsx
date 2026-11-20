@@ -25,11 +25,7 @@ export function ChangePasswordForm() {
 
     setLoading(true);
     setStatus(null);
-    const result = await apiPost(
-      "/auth/change-password",
-      { currentPassword: values.current, newPassword: values.next },
-      { auth: true },
-    );
+    const result = await apiPost("/auth/change-password", { currentPassword: values.current, newPassword: values.next });
     setLoading(false);
 
     if (result.ok) {

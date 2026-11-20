@@ -1,19 +1,11 @@
 /**
- * Admin session and API calls, shared by every admin screen.
- * The JWT lives in localStorage: readable by any script on this origin, acceptable for an internal
- * tool with no third-party scripts, but move it to an httpOnly cookie before the dashboard ships publicly.
+ * API calls for the admin screens. The session is an httpOnly cookie set by the API on sign-in:
+ * this code never sees the token, it only asks the browser to send cookies (`credentials: "include"`).
  */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-const TOKEN_KEY = "gs_admin_token";
 
 /** Mirrors PASSWORD_MIN_LENGTH in the backend's auth/domain/password-policy.ts. */
 export const PASSWORD_MIN_LENGTH = 10;
-
-export const session = {
-  get: () => localStorage.getItem(TOKEN_KEY),
-  set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
-  clear: () => localStorage.removeItem(TOKEN_KEY),
-};
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; message: string };
 
@@ -21,23 +13,18 @@ type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE";
   /** A plain object is sent as JSON; FormData is sent as a file upload. */
   body?: unknown;
-  /** Adds the signed-in admin's token. */
-  auth?: boolean;
 };
 
 /** Calls the API and never throws: network failures come back as status 0. */
-export async function apiRequest<T = void>(path: string, { method = "GET", body, auth = false }: RequestOptions = {}): Promise<ApiResult<T>> {
-  const token = auth ? session.get() : null;
+export async function apiRequest<T = void>(path: string, { method = "GET", body }: RequestOptions = {}): Promise<ApiResult<T>> {
   const isForm = body instanceof FormData;
 
   try {
     const res = await fetch(`${API_URL}/api${path}`, {
       method,
-      headers: {
-        // For FormData the browser sets the multipart Content-Type (with its boundary) itself.
-        ...(body !== undefined && !isForm && { "Content-Type": "application/json" }),
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
+      credentials: "include",
+      // For FormData the browser sets the multipart Content-Type (with its boundary) itself.
+      headers: body !== undefined && !isForm ? { "Content-Type": "application/json" } : undefined,
       body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
     });
 
@@ -54,8 +41,7 @@ export async function apiRequest<T = void>(path: string, { method = "GET", body,
   }
 }
 
-export const apiPost = <T = void>(path: string, body: unknown, { auth = false } = {}) =>
-  apiRequest<T>(path, { method: "POST", body, auth });
+export const apiPost = <T = void>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body });
 
 /** Message for a failed admin call; a 401 means the session expired. */
 export const failureMessage = (result: { status: number; message: string }) =>

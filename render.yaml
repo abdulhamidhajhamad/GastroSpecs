@@ -1,0 +1,42 @@
+# Render blueprint for the API. Render reads this file when you create a "Blueprint" from the repo.
+# Free plan for now: the service sleeps after 15 min without traffic, so an outside pinger
+# calls /api/health every 10 minutes (see Backend/README.md). Switch `plan` to a paid one when needed.
+services:
+  - type: web
+    name: gastrospecs-api
+    runtime: node
+    plan: free
+    region: frankfurt # next to the Neon database (eu-central-1)
+    branch: main # production only: work lands here by merging dev
+    rootDir: Backend
+    # Dev dependencies (Nest CLI, Prisma CLI, TypeScript) are needed to build and to run migrations.
+    buildCommand: npm ci --include=dev && npx prisma generate && npm run build
+    # Applies any new migrations, then starts the API. Render provides PORT.
+    startCommand: npx prisma migrate deploy && node dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CORS_ORIGINS
+        value: https://gastrospecs.com,https://www.gastrospecs.com
+      - key: COOKIE_DOMAIN
+        value: .gastrospecs.com # admin session cookie shared by the site and api. subdomain
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: JWT_SECRET
+        generateValue: true # Render creates a long random value once
+      - key: R2_BUCKET
+        value: gastrospecs-media
+      - key: R2_PUBLIC_URL
+        value: https://media.gastrospecs.com
+      # Secrets: `sync: false` makes Render ask for each value in its dashboard. Never commit them here.
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
