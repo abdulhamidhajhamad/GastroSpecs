@@ -2,11 +2,12 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, creat
 import { JwtService } from "@nestjs/jwt";
 import type { Request } from "express";
 import type { AdminTokenPayload, CurrentAdmin } from "../application/admin-token";
+import { SESSION_COOKIE } from "./session-cookie";
 
 type AuthenticatedRequest = Request & { admin?: CurrentAdmin };
 
 /**
- * Lets a request through only with a valid `Authorization: Bearer <jwt>` header,
+ * Lets a request through only with a valid session cookie (see SessionCookie),
  * and attaches the signed-in admin to it. Use with @UseGuards(JwtAuthGuard).
  */
 @Injectable()
@@ -15,8 +16,8 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-    const token = request.headers.authorization?.match(/^Bearer (.+)$/)?.[1];
-    if (!token) throw new UnauthorizedException();
+    const token: unknown = request.cookies?.[SESSION_COOKIE];
+    if (typeof token !== "string" || !token) throw new UnauthorizedException();
 
     try {
       const payload = await this.jwt.verifyAsync<AdminTokenPayload>(token);

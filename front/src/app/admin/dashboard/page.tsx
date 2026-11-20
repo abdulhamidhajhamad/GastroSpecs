@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { SignOutButton } from "@/features/admin";
 
-/**
- * Dashboard shell. The page itself has no auth check yet (kept open during setup);
- * the API routes behind it (change password, leads) do require a signed-in admin.
- */
+/** Dashboard home. Access is checked by the dashboard layout (RequireAdmin). */
 const sections = [
   { href: "/admin/dashboard/agents", title: "AI agents", text: "The AI agents that work for GastroSpecs." },
   { href: "/admin/dashboard/products", title: "Products", text: "Manage catalog items, specs and photos." },
@@ -40,10 +37,6 @@ export default function DashboardPage() {
           </Link>
         ))}
       </section>
-
-      <p className="mono-label mt-12 text-xs text-steel">
-        Auth guard not yet wired — any visitor can open this URL. Enable before deploying.
-      </p>
     </main>
   );
 }

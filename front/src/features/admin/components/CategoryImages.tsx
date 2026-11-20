@@ -16,7 +16,7 @@ export function CategoryImages() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const result = await apiRequest<AdminCategoryNode[]>("/admin/catalog/categories", { auth: true });
+    const result = await apiRequest<AdminCategoryNode[]>("/admin/catalog/categories");
     if (result.ok) setTree(result.data);
     else setError(failureMessage(result));
   }, []);
@@ -72,10 +72,10 @@ function CategoryRow({ category, isMain = false, onChange }: { category: AdminCa
   const upload = (file: File) => {
     const form = new FormData();
     form.append("file", file);
-    return run(() => apiRequest(`/admin/catalog/categories/${category.id}/image`, { method: "PUT", body: form, auth: true }));
+    return run(() => apiRequest(`/admin/catalog/categories/${category.id}/image`, { method: "PUT", body: form }));
   };
 
-  const remove = () => run(() => apiRequest(`/admin/catalog/categories/${category.id}/image`, { method: "DELETE", auth: true }));
+  const remove = () => run(() => apiRequest(`/admin/catalog/categories/${category.id}/image`, { method: "DELETE" }));
 
   return (
     <div className={`flex items-center gap-4 p-4 ${isMain ? "bg-mist/60" : "ps-8"}`}>

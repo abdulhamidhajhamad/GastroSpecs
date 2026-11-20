@@ -4,6 +4,7 @@ import { PrismaModule } from "./shared/prisma/prisma.module";
 import { StorageModule } from "./shared/storage/storage.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
+import { HealthModule } from "./modules/health/health.module";
 import { LeadsModule } from "./modules/leads/leads.module";
 
 /**
@@ -19,6 +20,7 @@ import { LeadsModule } from "./modules/leads/leads.module";
     AuthModule,
     CatalogModule,
     LeadsModule,
+    HealthModule,
   ],
 })
 export class AppModule {}

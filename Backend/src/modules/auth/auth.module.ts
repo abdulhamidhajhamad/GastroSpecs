@@ -9,6 +9,7 @@ import { BcryptPasswordHasher } from "./infrastructure/bcrypt-password-hasher";
 import { PrismaAdminUserRepository } from "./infrastructure/prisma-admin-user.repository";
 import { AuthController } from "./presentation/auth.controller";
 import { JwtAuthGuard } from "./presentation/jwt-auth.guard";
+import { SessionCookie } from "./presentation/session-cookie";
 
 /**
  * Auth vertical slice: controller → use cases → ports ← adapters (Prisma, bcrypt).
@@ -30,6 +31,7 @@ import { JwtAuthGuard } from "./presentation/jwt-auth.guard";
     SignInUseCase,
     ChangePasswordUseCase,
     JwtAuthGuard,
+    SessionCookie,
     { provide: AdminUserRepository, useClass: PrismaAdminUserRepository },
     { provide: PasswordHasher, useClass: BcryptPasswordHasher },
   ],

@@ -1,16 +1,13 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Injectable, OnModuleDestroy } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 
 /**
  * Prisma wrapped as an injectable singleton so modules can depend on it through DI.
- * Lifecycle hooks open the connection on startup and close it on shutdown.
+ * It connects lazily on the first query instead of at startup: Neon sleeps when idle and can take a few
+ * seconds to wake, and an eager connect would then crash the whole server on boot.
  */
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  async onModuleInit(): Promise<void> {
-    await this.$connect();
-  }
-
+export class PrismaService extends PrismaClient implements OnModuleDestroy {
   async onModuleDestroy(): Promise<void> {
     await this.$disconnect();
   }

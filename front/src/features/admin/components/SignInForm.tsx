@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { apiPost, session } from "../api";
+import { apiPost } from "../api";
 import { Field, SubmitButton } from "./Field";
 
 export function SignInForm() {
@@ -17,14 +17,14 @@ export function SignInForm() {
     setLoading(true);
     setError(null);
 
-    const result = await apiPost<{ accessToken: string }>("/auth/sign-in", { email, password });
+    // On success the API sets the session cookie; there is nothing to store here.
+    const result = await apiPost("/auth/sign-in", { email, password });
     setLoading(false);
 
     if (!result.ok) {
       setError(result.status === 401 ? "Invalid email or password." : result.message);
       return;
     }
-    session.set(result.data.accessToken);
     router.push("/admin/dashboard");
   }
 
