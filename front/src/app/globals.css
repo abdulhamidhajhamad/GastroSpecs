@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+/*
+ * GastroSpecs brand tokens (Brand guide v1): 90% black and white, 10% red.
+ * Red is reserved for the logo line and calls to action.
+ */
+@theme {
+  --color-ink: #0e0e0e; /* Spec Black: backgrounds */
+  --color-paper: #ffffff; /* White: logo, text */
+  --color-signal: #d72a1e; /* Signal Red: line, buttons */
+  --color-signal-dark: #b5221a; /* Signal Red hover */
+  --color-steel: #c8c8c8; /* Steel Grey: secondary text on black */
+  --color-graphite: #2e2e2e; /* Graphite: lines, panels */
+  --color-mist: #f4f4f3; /* Light panel on white pages */
+  --color-smoke: #5c5c5c; /* Secondary text on white (AA contrast) */
+  --color-hairline: #e3e3e1; /* Lines on white */
+
+  --font-sans: var(--font-archivo), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-archivo), var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), var(--font-plex-arabic), ui-monospace, monospace;
+
+  --animate-progress: progress linear forwards;
+
+  @keyframes progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+/*
+ * Arabic pages: Plex Sans Arabic must come first. Otherwise the Latin font's
+ * metric fallback (Arial, which has Arabic glyphs) would render the Arabic text.
+ */
+:root:lang(ar) {
+  --font-sans: var(--font-plex-arabic), var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-plex-arabic), var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-arabic), var(--font-plex-mono), ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-stretch: 125%; /* Archivo Expanded */
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Arabic: Plex Sans Arabic needs no tracking and more line height. */
+  :lang(ar) h1,
+  :lang(ar) h2,
+  :lang(ar) h3 {
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
+  :lang(ar) body {
+    line-height: 1.75;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+  }
+}
+
+/* Technical label (IBM Plex Mono, spaced capitals) with the brand's red square marker. */
+@utility eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+
+  &::before {
+    content: "";
+    width: 0.375rem;
+    height: 0.375rem;
+    background: var(--color-signal);
+    flex: none;
+  }
+
+  &:lang(ar) {
+    letter-spacing: 0;
+    font-size: 0.875rem;
+  }
+}
+
+/* Tone-aware helpers: sections set data-tone="dark" and children adapt. */
+@utility text-muted {
+  color: var(--color-smoke);
+
+  [data-tone="dark"] & {
+    color: var(--color-steel);
+  }
+}
+
+@utility border-line {
+  border-color: var(--color-hairline);
+
+  [data-tone="dark"] & {
+    border-color: var(--color-graphite);
+  }
+}
+
+/* Mono font that keeps tracking in Latin only. */
+@utility mono-label {
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  &:lang(ar) {
+    letter-spacing: 0;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Quote dialog: dim the page behind the modal. */
+dialog::backdrop {
+  background: rgba(14, 14, 14, 0.72);
+}

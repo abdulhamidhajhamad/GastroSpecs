@@ -1,0 +1,358 @@
+{
+  "meta": {
+    "title": "GastroSpecs | Commercial Kitchen & Refrigeration Equipment",
+    "description": "Commercial kitchen design and equipment for restaurants, butcheries, supermarkets, hotels and pastry shops. Layouts, specifications and factory-direct sourcing, shipped worldwide."
+  },
+  "nav": {
+    "home": "GastroSpecs home",
+    "label": "Main",
+    "services": "Our services",
+    "catalog": "Catalog",
+    "brand": "Our brand",
+    "about": "About",
+    "soon": "Soon",
+    "quote": "Request a quote",
+    "menu": "Open menu",
+    "close": "Close menu",
+    "switchLanguage": "عربي",
+    "skip": "Skip to content"
+  },
+  "home": {
+    "hero": {
+      "region": "Equipment by sector",
+      "slide": "Show slide",
+      "prev": "Previous slide",
+      "next": "Next slide",
+      "pause": "Pause slideshow",
+      "play": "Play slideshow",
+      "heading": "Commercial kitchen & refrigeration equipment",
+      "cta": "Request a quote",
+      "slides": {
+        "cookingLines": {
+          "title": "Cooking lines",
+          "items": "Ranges · Charcoal grills · Griddles · Hoods"
+        },
+        "dishwashing": {
+          "title": "Dishwashing",
+          "items": "Hood dishwashers · Conveyor dishwashers · Pre-rinse sinks · Racks"
+        },
+        "fastFood": {
+          "title": "Fast food lines",
+          "items": "Pressure fryers · Open fryers · Breading tables · Holding"
+        },
+        "gelato": {
+          "title": "Gelato & pastry",
+          "items": "Gelato showcases · Pastry displays · Blast freezers"
+        },
+        "bakery": {
+          "title": "Bakery production",
+          "items": "Spiral mixers · Convection ovens · Rack ovens · Proofers"
+        },
+        "supermarkets": {
+          "title": "Supermarket refrigeration",
+          "items": "Multideck chillers · Island freezers · Glass-door cabinets"
+        },
+        "butcheries": {
+          "title": "Butcheries",
+          "items": "Meat counters · Bone saws · Mincers · Cold rooms"
+        }
+      }
+    },
+    "intro": {
+      "eyebrow": "Who we are",
+      "title": "We don't just supply equipment. We engineer the space it works in.",
+      "body": "We plan the layout, specify every machine and source it directly from factories we visit ourselves. Then we follow your order until it ships.",
+      "pillars": {
+        "design": {
+          "title": "Layout & engineering",
+          "text": "Kitchen and shop layouts drawn around workflow, power, gas and drainage."
+        },
+        "sourcing": {
+          "title": "Factory-direct sourcing",
+          "text": "Equipment from vetted manufacturers, without layers of middlemen."
+        },
+        "inspection": {
+          "title": "Proof before shipping",
+          "text": "Photos and video of your actual order before it leaves the factory."
+        }
+      }
+    },
+    "engineering": {
+      "eyebrow": "Engineering & design",
+      "title": "Planned like a project, not sold like a product",
+      "lead": "The right machine in the wrong place costs you every day. That's why we start with the drawing.",
+      "caption": "3D kitchen design · Hotel kitchen",
+      "items": {
+        "layout": {
+          "title": "Kitchen & shop layout",
+          "text": "Layouts that follow the flow from delivery to service."
+        },
+        "specification": {
+          "title": "Equipment specification",
+          "text": "Capacity, power, gas and dimensions matched to your menu and volume."
+        },
+        "refrigeration": {
+          "title": "Refrigeration & showcases",
+          "text": "Display cases, cold rooms and chillers sized for your product."
+        },
+        "sourcing": {
+          "title": "Factory sourcing",
+          "text": "Direct from manufacturers we visit and assess."
+        },
+        "inspection": {
+          "title": "Quality inspection",
+          "text": "Checks, testing and photo and video proof before loading."
+        },
+        "logistics": {
+          "title": "Shipping & paperwork",
+          "text": "Delivery to your port or to your door, with guidance on the import paperwork."
+        }
+      }
+    },
+    "process": {
+      "eyebrow": "How we work",
+      "title": "From first message to delivery",
+      "lead": "Six clear steps and one person who follows your project.",
+      "steps": {
+        "brief": {
+          "title": "Brief",
+          "text": "Tell us about your business, space, location and opening date."
+        },
+        "design": {
+          "title": "Layout",
+          "text": "We draw the layout and propose the right equipment."
+        },
+        "quote": {
+          "title": "Quote",
+          "text": "A detailed quote with specifications, shipping terms and lead time."
+        },
+        "production": {
+          "title": "Production",
+          "text": "A deposit confirms the order and production starts."
+        },
+        "inspection": {
+          "title": "Inspection",
+          "text": "We inspect your order and send you photos and video."
+        },
+        "delivery": {
+          "title": "Shipping",
+          "text": "The balance is paid before shipment, and we follow your order until it arrives."
+        }
+      }
+    },
+    "traders": {
+      "eyebrow": "For dealers & distributors",
+      "title": "Selling restaurant equipment? Source it factory-direct.",
+      "text": "We supply equipment dealers and distributors with factory pricing, order sizes that fit your market and machines under your own brand.",
+      "cta": "Talk to us about supply",
+      "points": {
+        "direct": "Factory pricing",
+        "oem": "Your brand on the machine",
+        "flexible": "Order sizes that fit your market"
+      }
+    }
+  },
+  "trust": {
+    "eyebrow": "Why GastroSpecs",
+    "title": "Built to take the risk out of buying from abroad",
+    "lead": "The questions every buyer asks before paying a deposit, answered upfront.",
+    "items": {
+      "proof": {
+        "title": "You see it before it ships",
+        "text": "Real photos and video of your equipment at the factory, not catalogue pictures."
+      },
+      "payments": {
+        "title": "Clear payment stages",
+        "text": "A deposit to start production and the balance before shipment."
+      },
+      "shipping": {
+        "title": "Honest shipping terms",
+        "text": "Delivery to your port, or door-to-door through a licensed local partner. You know what's included before you order."
+      },
+      "contact": {
+        "title": "One point of contact",
+        "text": "One person follows your project from the first layout to delivery."
+      }
+    }
+  },
+  "contact": {
+    "eyebrow": "Start a project",
+    "title": "Tell us about your project",
+    "text": "Share your business type, location and what you need. We reply with the next step, usually a first layout or a quote.",
+    "whatsappCta": "Message us on WhatsApp",
+    "whatsappMessage": "Hello GastroSpecs, I'd like to discuss a project.",
+    "comingSoon": "Coming soon",
+    "channels": {
+      "whatsapp": "WhatsApp",
+      "email": "Email",
+      "markets": "Markets"
+    },
+    "marketsValue": "Worldwide",
+    "form": {
+      "open": "Request a quote",
+      "title": "Request a quote",
+      "intro": "Leave your details and what you are building. We reply with the next step — usually a first layout or a quote.",
+      "email": "Email",
+      "phone": "Phone number",
+      "type": "Project type",
+      "typePlaceholder": "Select a type",
+      "business": "Business name",
+      "submit": "Send request",
+      "close": "Close",
+      "subject": "Quote request",
+      "types": {
+        "trader": "Equipment trader / distributor",
+        "fastFood": "Fast food restaurant",
+        "central": "Central / production kitchen",
+        "hotel": "Hotel or large kitchen",
+        "other": "Other"
+      }
+    }
+  },
+  "services": {
+    "meta": {
+      "title": "Our services",
+      "description": "GastroSpecs supplies restaurant and butchery equipment traders at factory-direct prices, and designs, specifies and equips commercial kitchens, supermarkets, bakeries and coffee shops."
+    },
+    "hero": {
+      "eyebrow": "Services",
+      "title": "Equipment supply for traders, and full engineering for venues.",
+      "lead": "We work with two kinds of customers: equipment traders who want factory-direct prices, and businesses that need a kitchen designed, specified and supplied from one place."
+    },
+    "items": {
+      "trade": {
+        "label": "For traders & distributors",
+        "title": "The equipment your customers ask for, at factory prices.",
+        "text": "We supply traders and distributors who deal in restaurant and butchery equipment. You get factory-direct pricing, the machines your market wants, and one partner who sources, inspects and ships for you.",
+        "points": {
+          "pricing": "Factory-direct pricing",
+          "range": "Restaurant & butchery equipment",
+          "oem": "Your brand on the machines",
+          "volume": "Order sizes that fit your market"
+        }
+      },
+      "engineering": {
+        "label": "Engineering & supply",
+        "title": "A venue designed, specified and equipped from one place.",
+        "text": "For kitchens, supermarkets, bakeries and coffee shops, we plan the layout, specify every machine and supply it at the best price — refrigeration, cooking, display and showcases included.",
+        "points": {
+          "kitchens": "Commercial kitchens",
+          "supermarkets": "Supermarkets",
+          "bakeries": "Bakeries",
+          "coffee": "Coffee shops"
+        }
+      }
+    }
+  },
+  "catalog": {
+    "meta": {
+      "title": "Catalog",
+      "description": "Browse our commercial kitchen and refrigeration equipment: cooking lines, fryers, refrigeration, display showcases, bakery and butchery machines."
+    },
+    "hero": {
+      "eyebrow": "Catalog",
+      "title": "Commercial kitchen and refrigeration equipment",
+      "lead": "Cooking lines, refrigeration, display showcases, bakery and butchery machines. Specifications, dimensions and factory-direct pricing."
+    },
+    "tabs": {
+      "business": "By business",
+      "equipment": "By equipment",
+      "businessLead": "Pick your type of business to see the equipment it needs, station by station.",
+      "equipmentLead": "Browse every machine we supply, grouped by what it does."
+    },
+    "business": {
+      "cardTitle": "{name} equipment",
+      "more": "+{count} more"
+    },
+    "grid": {
+      "from": "From",
+      "noImage": "Photo coming soon"
+    },
+    "empty": {
+      "title": "Catalog coming soon",
+      "text": "We are preparing the full catalog with specifications and photos. In the meantime, tell us what you need and we will send a quote directly."
+    },
+    "detail": {
+      "back": "Catalog",
+      "viewAll": "View all",
+      "businessEyebrow": "Equipment for",
+      "businessLead": "Everything this kitchen needs, starting with the main equipment.",
+      "equipmentEyebrow": "Equipment",
+      "noProductsTitle": "Products coming soon",
+      "noProductsText": "We are adding models, specifications and photos for this category. Ask us for a quote and we will send you the options directly."
+    }
+  },
+  "brand": {
+    "meta": {
+      "title": "Our brand",
+      "description": "GastroSpecs own-brand commercial kitchen and refrigeration equipment. Coming soon."
+    },
+    "eyebrow": "Our brand",
+    "title": "Coming soon",
+    "lead": "Our own line of commercial kitchen and refrigeration equipment, built to our specifications in partner factories. We'll share it here soon."
+  },
+  "about": {
+    "meta": {
+      "title": "About us",
+      "description": "GastroSpecs helps restaurant equipment traders buy at factory prices and helps food businesses design and equip their kitchens. Factory-direct from China, shipped worldwide."
+    },
+    "hero": {
+      "eyebrow": "About GastroSpecs",
+      "title": "We help restaurant equipment traders buy at the right price.",
+      "lead": "GastroSpecs connects equipment dealers and food businesses with vetted factories in China. We secure factory pricing, inspect every order and design the kitchen around the equipment, so you buy with confidence and sell with a better margin."
+    },
+    "audiences": {
+      "traders": {
+        "label": "For traders & distributors",
+        "title": "Factory prices, without the risk",
+        "text": "You know your market; we know the factories. We source the equipment your customers ask for at factory prices, check every order before it ships and coordinate the shipping, so you can focus on selling.",
+        "points": {
+          "p1": "Factory-direct pricing",
+          "p2": "Your brand on the machines",
+          "p3": "Inspection before shipping",
+          "p4": "Order sizes that fit your market"
+        }
+      },
+      "businesses": {
+        "label": "For restaurants, hotels & food businesses",
+        "title": "A kitchen designed before it's equipped",
+        "text": "We start from your menu, your space and your daily volume. We draw the layout, then specify and supply every machine, from cooking lines to refrigeration and display showcases.",
+        "points": {
+          "p1": "Kitchen layout & 3D design",
+          "p2": "Equipment specification",
+          "p3": "Refrigeration & showcases",
+          "p4": "One point of contact"
+        }
+      }
+    }
+  },
+  "footer": {
+    "tagline": "Commercial kitchen & butchery equipment",
+    "summary": "Kitchen layouts, equipment specification and factory-direct sourcing for food businesses worldwide.",
+    "explore": "Explore",
+    "contact": "Contact",
+    "whatsapp": "WhatsApp",
+    "whatsappMessage": "Hello GastroSpecs, I'd like to discuss a project.",
+    "email": "Email",
+    "comingSoon": "Coming soon",
+    "markets": "Markets",
+    "marketsValue": "Worldwide",
+    "rights": "All rights reserved.",
+    "signature": "Sourced in China · Specified for your kitchen"
+  },
+  "media": {
+    "cookingLine": "Stainless steel cooking line with gas range, griddle and fryers under an extraction hood",
+    "dishwashingLine": "Stainless steel commercial kitchen with dishwashing line and shelving",
+    "fastFoodLine": "Professional fast food kitchen line",
+    "gelatoShowcase": "Gelato display showcase filled with gelato",
+    "bakeryProduction": "Bakery with display counter and ovens",
+    "supermarketRefrigeration": "Supermarket with island freezers and glass-door freezer cabinets",
+    "butcheryCounter": "Butcher shop meat display counter",
+    "kitchenDesign3d": "3D design of a hotel kitchen: island cooking line under an extraction hood, two combi ovens along the back wall"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for doesn't exist or has moved.",
+    "back": "Back to home"
+  }
+}

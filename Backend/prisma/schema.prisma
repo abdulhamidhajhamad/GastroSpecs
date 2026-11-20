@@ -1,0 +1,164 @@
+// Prisma schema — single source of truth for the database.
+// After a change here run:  npm run prisma:migrate -- --name <what-changed>
+//
+// Bilingual text uses an `En` / `Ar` column pair. Arabic falls back to English when empty.
+// Images are stored as object keys inside the R2 bucket (e.g. "products/<id>/<uuid>.webp"),
+// never as full URLs, so moving to another domain is a single R2_PUBLIC_URL change.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  /// Migrations need a direct connection; poolers like Neon's "-pooler" host don't support them.
+  directUrl = env("DIRECT_URL")
+}
+
+/// `owner` can later manage other admins; `admin` manages the catalog only.
+enum AdminRole {
+  owner
+  admin
+}
+
+/// Can sign in to the dashboard. Only a bcrypt hash of the password is stored.
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  role         AdminRole @default(admin)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("admin_users")
+}
+
+/// Equipment by function (Frying, Preparation…), two levels deep: a main category and its subcategories.
+/// Products always attach to a subcategory; a main category shows everything under it.
+model Category {
+  id            String                 @id @default(uuid())
+  slug          String                 @unique
+  nameEn        String
+  nameAr        String
+  /// Display order everywhere: main equipment (cooking, frying…) first, small items last.
+  sortOrder     Int                    @default(0)
+  imageKey      String?
+  parentId      String?
+  parent        Category?              @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children      Category[]             @relation("CategoryTree")
+  products      Product[]
+  businessTypes BusinessTypeCategory[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+/// Kind of venue (Fried chicken, Hotel, Bakery…). Its page shows the subcategories linked to it.
+model BusinessType {
+  id         String                 @id @default(uuid())
+  slug       String                 @unique
+  nameEn     String
+  nameAr     String
+  summaryEn  String?
+  summaryAr  String?
+  imageKey   String?
+  sortOrder  Int                    @default(0)
+  categories BusinessTypeCategory[]
+  leads      Lead[]
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+
+  @@map("business_types")
+}
+
+/// The equipment a venue needs: which subcategories appear on a business type's page.
+/// Shown in the categories' own display order, so the link needs no order of its own.
+model BusinessTypeCategory {
+  businessTypeId String
+  businessType   BusinessType @relation(fields: [businessTypeId], references: [id], onDelete: Cascade)
+  categoryId     String
+  category       Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([businessTypeId, categoryId])
+  @@index([categoryId])
+  @@map("business_type_categories")
+}
+
+model Product {
+  id         String           @id @default(uuid())
+  slug       String           @unique
+  nameEn     String
+  nameAr     String
+  summaryEn  String?
+  summaryAr  String?
+  /// Specs shared by every variant: [{ labelEn, labelAr, value }].
+  specs      Json?
+  /// Hidden from the public site until true, so a product can be prepared first.
+  published  Boolean          @default(false)
+  categoryId String
+  category   Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants   ProductVariant[]
+  images     ProductImage[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([categoryId])
+  @@index([published])
+  @@map("products")
+}
+
+/// A size or model of a product, e.g. a cooking line in 90, 120 and 150 cm. Every product has at least one.
+model ProductVariant {
+  id            String  @id @default(uuid())
+  productId     String
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku           String? @unique
+  labelEn       String
+  labelAr       String
+  /// Specs specific to this variant (width, power…), same shape as Product.specs.
+  specs         Json?
+  /// Smallest currency unit (e.g. cents) to avoid floating-point rounding.
+  priceAmount   Int?
+  priceCurrency String?
+  sortOrder     Int     @default(0)
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  key       String
+  altEn     String?
+  altAr     String?
+  /// The lowest sortOrder is the main image.
+  sortOrder Int     @default(0)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+enum LeadSource {
+  catalog_download
+  quote
+}
+
+/// A visitor who left contact details (catalog PDF download or quote request).
+model Lead {
+  id             String        @id @default(uuid())
+  email          String?
+  phone          String?
+  source         LeadSource
+  businessTypeId String?
+  businessType   BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+
+  @@index([createdAt])
+  @@map("leads")
+}

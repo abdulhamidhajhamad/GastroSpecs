@@ -1,0 +1,202 @@
+/**
+ * Seeds the catalog taxonomy (categories + business types), and the owner account when asked. No products.
+ * Idempotent: safe to re-run, it updates instead of duplicating.
+ *
+ *   npm run prisma:seed                                           → taxonomy only
+ *   OWNER_EMAIL=… OWNER_PASSWORD=… npm run prisma:seed            → also creates/resets the owner
+ *
+ * The owner's credentials come from the command line only, so the password never lands in a file.
+ */
+import { PrismaClient } from "@prisma/client";
+import { PASSWORD_MIN_LENGTH } from "../src/modules/auth/domain/password-policy";
+import { BcryptPasswordHasher } from "../src/modules/auth/infrastructure/bcrypt-password-hasher";
+
+const prisma = new PrismaClient();
+
+type Name = { slug: string; en: string; ar: string };
+
+/**
+ * Main categories in display order: the big, high-value equipment first (cooking, frying, dishwashing,
+ * refrigeration), small preparation items last. Each with its subcategories.
+ */
+const categories: Array<Name & { children: Name[] }> = [
+  {
+    slug: "cooking", en: "Cooking", ar: "معدات الطبخ",
+    children: [
+      { slug: "cooking-lines", en: "Cooking lines", ar: "خطوط طبخ" },
+      { slug: "grills", en: "Grills", ar: "شوايات" },
+      { slug: "griddles", en: "Griddles", ar: "صاجات" },
+    ],
+  },
+  {
+    slug: "frying", en: "Frying", ar: "القلي",
+    children: [
+      { slug: "open-fryers", en: "Open fryers", ar: "قلايات مفتوحة" },
+      { slug: "pressure-fryers", en: "Pressure fryers", ar: "قلايات ضغط" },
+    ],
+  },
+  {
+    slug: "dishwashing", en: "Dishwashing", ar: "الغسيل",
+    children: [
+      { slug: "dishwashers", en: "Dishwashers", ar: "غسالات صحون" },
+      { slug: "sinks", en: "Sinks", ar: "مغاسل" },
+    ],
+  },
+  {
+    slug: "refrigeration", en: "Refrigeration", ar: "التبريد",
+    children: [
+      { slug: "refrigerators", en: "Refrigerators", ar: "ثلاجات" },
+      { slug: "freezers", en: "Freezers", ar: "فريزرات" },
+      { slug: "cold-rooms", en: "Cold rooms", ar: "غرف تبريد" },
+    ],
+  },
+  {
+    slug: "ovens", en: "Ovens", ar: "الأفران",
+    children: [
+      { slug: "convection-ovens", en: "Convection ovens", ar: "أفران كونفكشن" },
+      { slug: "combi-ovens", en: "Combi ovens", ar: "أفران كومبي" },
+      { slug: "rack-ovens", en: "Rack ovens", ar: "أفران دوّارة" },
+    ],
+  },
+  {
+    slug: "display", en: "Display", ar: "العرض",
+    children: [
+      { slug: "gelato-showcases", en: "Gelato showcases", ar: "واجهات جيلاتو" },
+      { slug: "pastry-displays", en: "Pastry displays", ar: "واجهات حلويات" },
+      { slug: "meat-counters", en: "Meat counters", ar: "واجهات لحوم" },
+    ],
+  },
+  {
+    slug: "holding", en: "Holding & warming", ar: "الحفظ والتسخين",
+    children: [
+      { slug: "food-warmers", en: "Food warmers", ar: "وورمرات" },
+      { slug: "holding-cabinets", en: "Holding cabinets", ar: "خزائن حفظ" },
+    ],
+  },
+  {
+    slug: "stainless", en: "Stainless steel", ar: "الستانلس",
+    children: [
+      { slug: "work-tables", en: "Work tables", ar: "طاولات عمل" },
+      { slug: "shelving", en: "Shelving", ar: "رفوف" },
+      { slug: "hoods", en: "Extraction hoods", ar: "شفّاطات" },
+    ],
+  },
+  {
+    slug: "preparation", en: "Preparation", ar: "التحضير",
+    children: [
+      { slug: "mixers", en: "Mixers", ar: "عجّانات" },
+      { slug: "mincers", en: "Mincers", ar: "فرّامات" },
+      { slug: "slicers", en: "Slicers", ar: "قطّاعات" },
+      { slug: "breading-tables", en: "Breading tables", ar: "طاولات تتبيل" },
+    ],
+  },
+];
+
+/** Each venue with the subcategories (slugs) shown on its page. A starting point; adjust per real projects. */
+const businessTypes: Array<Name & { categories: string[] }> = [
+  {
+    slug: "fried-chicken", en: "Fried chicken", ar: "مطاعم البروستد",
+    categories: ["breading-tables", "pressure-fryers", "open-fryers", "food-warmers", "holding-cabinets", "refrigerators", "freezers", "sinks", "work-tables", "hoods"],
+  },
+  {
+    slug: "burger", en: "Burger", ar: "مطاعم البرجر",
+    categories: ["slicers", "griddles", "grills", "open-fryers", "food-warmers", "refrigerators", "freezers", "sinks", "work-tables", "hoods"],
+  },
+  {
+    slug: "central-kitchen", en: "Central kitchen", ar: "المطابخ المركزية",
+    categories: ["mixers", "mincers", "slicers", "cooking-lines", "grills", "griddles", "combi-ovens", "convection-ovens", "holding-cabinets", "refrigerators", "freezers", "cold-rooms", "dishwashers", "sinks", "work-tables", "shelving", "hoods"],
+  },
+  {
+    slug: "hotel", en: "Hotels & large kitchens", ar: "الفنادق والمطابخ الكبيرة",
+    categories: ["mixers", "slicers", "cooking-lines", "grills", "combi-ovens", "convection-ovens", "food-warmers", "holding-cabinets", "refrigerators", "freezers", "cold-rooms", "pastry-displays", "dishwashers", "sinks", "work-tables", "shelving", "hoods"],
+  },
+  {
+    slug: "bakery", en: "Bakery", ar: "المخابز",
+    categories: ["mixers", "rack-ovens", "convection-ovens", "refrigerators", "freezers", "pastry-displays", "work-tables", "shelving"],
+  },
+  {
+    slug: "gelato", en: "Gelato & pastry", ar: "الجيلاتو والحلويات",
+    categories: ["mixers", "convection-ovens", "refrigerators", "freezers", "gelato-showcases", "pastry-displays", "sinks", "work-tables"],
+  },
+  {
+    slug: "butchery", en: "Butchery", ar: "الملاحم",
+    categories: ["mincers", "slicers", "refrigerators", "freezers", "cold-rooms", "meat-counters", "sinks", "work-tables"],
+  },
+  {
+    slug: "supermarket", en: "Supermarket", ar: "السوبرماركت",
+    categories: ["refrigerators", "freezers", "cold-rooms", "meat-counters", "pastry-displays", "shelving"],
+  },
+  {
+    slug: "coffee-shop", en: "Coffee shop", ar: "الكوفي شوب",
+    categories: ["convection-ovens", "refrigerators", "pastry-displays", "dishwashers", "sinks", "work-tables"],
+  },
+];
+
+/**
+ * Subcategory order is `parent position × 100 + own position`, so sorting subcategories alone
+ * still follows the main-category order when a page lists subcategories from several main categories.
+ */
+async function seedCategories() {
+  for (const [i, main] of categories.entries()) {
+    const parentOrder = (i + 1) * 100;
+    const parent = await prisma.category.upsert({
+      where: { slug: main.slug },
+      update: { nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder, parentId: null },
+      create: { slug: main.slug, nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder },
+    });
+
+    for (const [j, child] of main.children.entries()) {
+      const data = { nameEn: child.en, nameAr: child.ar, sortOrder: parentOrder + j + 1, parentId: parent.id };
+      await prisma.category.upsert({ where: { slug: child.slug }, update: data, create: { slug: child.slug, ...data } });
+    }
+  }
+}
+
+/** Upserts each venue and adds its missing category links. Existing links are left alone. */
+async function seedBusinessTypes() {
+  const categoryIds = new Map((await prisma.category.findMany({ select: { id: true, slug: true } })).map((c) => [c.slug, c.id]));
+
+  for (const [i, type] of businessTypes.entries()) {
+    const data = { nameEn: type.en, nameAr: type.ar, sortOrder: i + 1 };
+    const row = await prisma.businessType.upsert({ where: { slug: type.slug }, update: data, create: { slug: type.slug, ...data } });
+
+    const links = type.categories.map((slug) => {
+      const categoryId = categoryIds.get(slug);
+      if (!categoryId) throw new Error(`Business type "${type.slug}" lists unknown category "${slug}"`);
+      return { businessTypeId: row.id, categoryId };
+    });
+    await prisma.businessTypeCategory.createMany({ data: links, skipDuplicates: true });
+  }
+}
+
+/** Returns the owner's email when one was created, or null when no credentials were passed. */
+async function seedOwner(): Promise<string | null> {
+  const email = process.env.OWNER_EMAIL?.trim().toLowerCase();
+  const password = process.env.OWNER_PASSWORD;
+  if (!email || !password) return null;
+  if (password.length < PASSWORD_MIN_LENGTH) {
+    throw new Error(`OWNER_PASSWORD must be at least ${PASSWORD_MIN_LENGTH} characters`);
+  }
+
+  const passwordHash = await new BcryptPasswordHasher().hash(password);
+  await prisma.adminUser.upsert({
+    where: { email },
+    update: { passwordHash, role: "owner" },
+    create: { email, passwordHash, name: "Owner", role: "owner" },
+  });
+  return email;
+}
+
+async function main() {
+  await seedCategories();
+  await seedBusinessTypes();
+  const owner = await seedOwner();
+  console.log(`Seed complete: categories, business types${owner ? `, owner ${owner}` : ""}.`);
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());
