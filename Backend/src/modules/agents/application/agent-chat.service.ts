@@ -15,8 +15,16 @@ import { ImportPlanExecutor } from "./import-plan.executor";
 const MAX_STEPS = 20;
 /** A run that hasn't written anything for this long died with the server (deploy, restart). */
 const STALE_RUN_MS = 20 * 60 * 1000;
-/** The API reads PDFs up to 32 MB per request. */
-const MAX_CATALOG_BYTES = 32 * 1024 * 1024;
+/** A request may be 32 MB and the PDF travels in base64 (a third bigger), so ~23 MB of PDF fits. */
+const MAX_CATALOG_BYTES = 23 * 1024 * 1024;
+
+/**
+ * How a catalog is kept in a stored message: a reference to the PDF in R2, not the PDF itself. It becomes a
+ * PDF document block (base64) each time the model is called; see toModelMessages.
+ */
+type CatalogRef = { type: "catalog"; fileKey: string; title: string };
+const isCatalogRef = (block: unknown): block is CatalogRef =>
+  typeof block === "object" && block !== null && (block as { type?: string }).type === "catalog";
 
 type Upload = { buffer: Buffer; size: number; originalname?: string };
 
@@ -26,9 +34,29 @@ const textOf = (reply: ModelReply) =>
     .join("\n\n")
     .trim();
 
-/** Stored messages → what the model sees. Our events become short user notes so the agent knows what happened. */
-const toModelMessages = (messages: StoredMessage[]): ModelMessage[] =>
-  messages.map((m) => (m.role === "event" ? { role: "user", content: [{ type: "text", text: `[GastroSpecs] ${m.text ?? ""}` }] } : { role: m.role, content: m.content }));
+/**
+ * Stored messages → what the model sees. Our events become short user notes so the agent knows what
+ * happened, and the catalog reference becomes the PDF itself, marked for caching: it is by far the biggest
+ * part of every request, so later turns read it from the cache at a tenth of the price.
+ */
+function toModelMessages(messages: StoredMessage[], catalogBase64: string | null): ModelMessage[] {
+  return messages.map((m): ModelMessage => {
+    if (m.role === "event") return { role: "user", content: [{ type: "text", text: `[GastroSpecs] ${m.text ?? ""}` }] };
+    if (typeof m.content === "string" || !catalogBase64) return { role: m.role, content: m.content };
+    // Stored content may hold our own CatalogRef blocks besides the SDK's.
+    const content = (m.content as unknown[]).map((block) =>
+      isCatalogRef(block)
+        ? {
+            type: "document" as const,
+            source: { type: "base64" as const, media_type: "application/pdf" as const, data: catalogBase64 },
+            title: block.title,
+            cache_control: { type: "ephemeral" as const },
+          }
+        : block,
+    ) as ModelContent;
+    return { role: m.role, content };
+  });
+}
 
 /**
  * Chats between admins and agents. The agent replies in the background (a catalog can take minutes); the
@@ -65,7 +93,7 @@ export class AgentChatService {
     const conversation = orNotFound(await this.chats.findConversation(id), "Conversation");
     const [messages, plans] = await Promise.all([this.chats.listMessages(id), this.chats.listPlans(id)]);
     const stale = conversation.status === "running" && Date.now() - conversation.updatedAt.getTime() > STALE_RUN_MS;
-    const { claudeFileId: _f, fileKey: _k, ...visible } = conversation;
+    const { fileKey: _k, ...visible } = conversation;
     return {
       ...visible,
       status: stale ? "failed" : conversation.status,
@@ -90,23 +118,21 @@ export class AgentChatService {
     if (file) this.checkCatalog(file);
     if (!(await this.chats.tryStartRun(id))) throw new ConflictException("ahmadprod is still working on the last message");
 
-    // Files uploaded so far, removed again if a later step fails.
-    const uploaded: { fileKey?: string; claudeFileId?: string } = {};
+    // The catalog stored so far, removed again if a later step fails.
+    let fileKey: string | undefined;
     try {
-      const content: ModelContent = [];
+      const content: unknown[] = [];
       if (file) {
         const fileName = file.originalname?.slice(0, 200) || "catalog.pdf";
-        uploaded.claudeFileId = await this.model.uploadFile(file.buffer, fileName, "application/pdf");
-        uploaded.fileKey = `agent-files/${id}/${randomUUID()}.pdf`;
-        await this.storage.put(uploaded.fileKey, file.buffer, "application/pdf");
-        await this.chats.attachFile(id, { fileKey: uploaded.fileKey, fileName, claudeFileId: uploaded.claudeFileId });
-        content.push({ type: "document", source: { type: "file", file_id: uploaded.claudeFileId }, title: fileName });
+        fileKey = `agent-files/${id}/${randomUUID()}.pdf`;
+        await this.storage.put(fileKey, file.buffer, "application/pdf");
+        await this.chats.attachFile(id, { fileKey, fileName });
+        content.push({ type: "catalog", fileKey, title: fileName } satisfies CatalogRef);
       }
       content.push({ type: "text", text: message || "Here is the catalog. Please import it." });
-      await this.chats.appendMessage(id, "user", content, message || null);
+      await this.chats.appendMessage(id, "user", content as ModelContent, message || null);
     } catch (error) {
-      if (uploaded.fileKey) await discardQuietly(this.storage, uploaded.fileKey);
-      if (uploaded.claudeFileId) await this.model.deleteFile(uploaded.claudeFileId).catch(() => undefined);
+      if (fileKey) await discardQuietly(this.storage, fileKey);
       await this.chats.finishRun(id, null);
       throw error;
     }
@@ -144,7 +170,6 @@ export class AgentChatService {
   async deleteConversation(id: string) {
     const files = orNotFound(await this.chats.deleteConversation(id), "Conversation");
     if (files.fileKey) await discardQuietly(this.storage, files.fileKey);
-    if (files.claudeFileId) await this.model.deleteFile(files.claudeFileId).catch(() => undefined);
   }
 
   // --- Background work ---------------------------------------------------------------------------------
@@ -155,11 +180,15 @@ export class AgentChatService {
    */
   private async run(id: string) {
     try {
+      // Read once per run: every turn of the loop sends the same catalog.
+      const fileKey = (await this.chats.findConversation(id))?.fileKey;
+      const catalog = fileKey ? (await this.storage.get(fileKey)).toString("base64") : null;
+
       for (let step = 0; step < MAX_STEPS; step++) {
         const reply = await this.model.respond({
           system: this.ahmadprod.system,
           tools: this.ahmadprod.tools,
-          messages: toModelMessages(await this.chats.listMessages(id)),
+          messages: toModelMessages(await this.chats.listMessages(id), catalog),
         });
 
         // A refused or truncated turn may hold a half-written tool call: don't store or run it.
@@ -213,7 +242,7 @@ export class AgentChatService {
   }
 
   private checkCatalog(file: Upload) {
-    if (file.size > MAX_CATALOG_BYTES) throw new BadRequestException("The catalog must be 32 MB or smaller");
+    if (file.size > MAX_CATALOG_BYTES) throw new BadRequestException("The catalog must be 23 MB or smaller");
     if (file.buffer.subarray(0, 5).toString("ascii") !== "%PDF-") throw new BadRequestException("The catalog must be a PDF file");
   }
 
@@ -229,6 +258,6 @@ export class AgentChatService {
   }
 
   private hasDocument(m: StoredMessage) {
-    return m.role === "user" && Array.isArray(m.content) && m.content.some((block) => typeof block === "object" && block.type === "document");
+    return m.role === "user" && Array.isArray(m.content) && m.content.some(isCatalogRef);
   }
 }

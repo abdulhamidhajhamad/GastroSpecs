@@ -27,7 +27,7 @@ export class PrismaAgentChatRepository implements AgentChatRepository {
   findConversation(id: string) {
     return this.prisma.agentConversation.findUnique({
       where: { id },
-      select: { id: true, agent: true, title: true, status: true, lastError: true, fileKey: true, fileName: true, claudeFileId: true, updatedAt: true },
+      select: { id: true, agent: true, title: true, status: true, lastError: true, fileKey: true, fileName: true, updatedAt: true },
     });
   }
 
@@ -40,13 +40,13 @@ export class PrismaAgentChatRepository implements AgentChatRepository {
     await this.prisma.agentConversation.update({ where: { id }, data: { status: error ? "failed" : "idle", lastError: error } });
   }
 
-  async attachFile(id: string, file: { fileKey: string; fileName: string; claudeFileId: string }): Promise<void> {
+  async attachFile(id: string, file: { fileKey: string; fileName: string }): Promise<void> {
     // The chat is named after its catalog.
     await this.prisma.agentConversation.update({ where: { id }, data: { ...file, title: file.fileName.replace(/\.pdf$/i, "") } });
   }
 
   async deleteConversation(id: string) {
-    const found = await this.prisma.agentConversation.findUnique({ where: { id }, select: { fileKey: true, claudeFileId: true } });
+    const found = await this.prisma.agentConversation.findUnique({ where: { id }, select: { fileKey: true } });
     if (found) await this.prisma.agentConversation.delete({ where: { id } }); // messages and plans go with it (cascade)
     return found;
   }

@@ -122,10 +122,13 @@ products/<productId>/<random>.webp
 
 ## AI agents (ahmadprod)
 
-`modules/agents` runs dashboard agents on Claude (`ANTHROPIC_API_KEY`; without it the API runs and the
-chat says the key is missing). **ahmadprod** imports supplier catalogs:
+`modules/agents` runs dashboard agents on Claude Opus through OpenRouter (`OPENROUTER_API_KEY`, or
+`ANTHROPIC_API_KEY` to go to Anthropic directly; `AGENT_MODEL_ID` picks another model). Without a key the
+API runs and the chat says the key is missing. **ahmadprod** imports supplier catalogs:
 
-1. The admin sends a catalog PDF in the chat (stored in R2 under `agent-files/`, and uploaded to Claude).
+1. The admin sends a catalog PDF in the chat (stored in R2 under `agent-files/`). Each model request carries
+   the PDF (marked for prompt caching, so repeat turns cost a tenth), which keeps a chat working for as long
+   as the catalog is in R2.
 2. The agent reads it and uses read-only tools (`list_categories`, `search_suppliers`, `search_products`),
    then saves one plan with `propose_import_plan`. It cannot write anything itself.
 3. The admin reviews the plan (with photo previews cut from the catalog) and approves or rejects it.
@@ -142,7 +145,7 @@ pages are pictures; other pages get a note to add the photo by hand.
 | GET | /api/admin/agents | The agents. |
 | GET / POST | /api/admin/agents/:agent/conversations | List / start chats. |
 | GET / DELETE | /api/admin/agents/conversations/:id | A chat with messages and plans (poll while running) / delete it with its file. |
-| POST | /api/admin/agents/conversations/:id/messages | Multipart `text` + optional `file` (PDF ≤ 32 MB). 202: the agent answers in the background. |
+| POST | /api/admin/agents/conversations/:id/messages | Multipart `text` + optional `file` (PDF ≤ 23 MB). 202: the agent answers in the background. |
 | POST | /api/admin/agents/plans/:id/approve · /reject | Approve (202, runs in the background) or reject a pending plan. |
 | GET | /api/admin/agents/plans/:id/photos/:index | Preview of the photo a plan item would get. |
 

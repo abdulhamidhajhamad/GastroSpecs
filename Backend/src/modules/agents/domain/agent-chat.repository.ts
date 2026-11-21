@@ -13,7 +13,6 @@ export type Conversation = {
   lastError: string | null;
   fileKey: string | null;
   fileName: string | null;
-  claudeFileId: string | null;
   updatedAt: Date;
 };
 
@@ -47,9 +46,9 @@ export abstract class AgentChatRepository {
   /** Marks the chat as running unless it already is. False when another run is going on. */
   abstract tryStartRun(id: string): Promise<boolean>;
   abstract finishRun(id: string, error: string | null): Promise<void>;
-  abstract attachFile(id: string, file: { fileKey: string; fileName: string; claudeFileId: string }): Promise<void>;
+  abstract attachFile(id: string, file: { fileKey: string; fileName: string }): Promise<void>;
   /** Removes the chat with its messages and plans; returns its file so it can be deleted too. */
-  abstract deleteConversation(id: string): Promise<Pick<Conversation, "fileKey" | "claudeFileId"> | null>;
+  abstract deleteConversation(id: string): Promise<Pick<Conversation, "fileKey"> | null>;
 
   abstract appendMessage(conversationId: string, role: MessageRole, content: ModelContent, text: string | null): Promise<void>;
   abstract listMessages(conversationId: string): Promise<StoredMessage[]>;

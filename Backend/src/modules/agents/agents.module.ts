@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { AuthModule } from "../auth/auth.module";
 import { CatalogModule } from "../catalog/catalog.module";
 import { SourcingModule } from "../sourcing/sourcing.module";
@@ -10,7 +9,6 @@ import { AgentChatRepository } from "./domain/agent-chat.repository";
 import { AgentModel } from "./domain/agent-model";
 import { CatalogPhotos } from "./domain/catalog-photos";
 import { ClaudeAgentModel } from "./infrastructure/claude-agent-model";
-import { GeminiAgentModel } from "./infrastructure/gemini-agent-model";
 import { PdfCatalogPhotos } from "./infrastructure/pdf-catalog-photos";
 import { PrismaAgentChatRepository } from "./infrastructure/prisma-agent-chat.repository";
 import { AgentsController } from "./presentation/agents.controller";
@@ -27,12 +25,7 @@ import { AgentsController } from "./presentation/agents.controller";
     AhmadprodAgent,
     ImportPlanExecutor,
     { provide: AgentChatRepository, useClass: PrismaAgentChatRepository },
-    // AGENT_MODEL=gemini (free tier) or claude (default). Switch with a new chat: files belong to one model.
-    {
-      provide: AgentModel,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => (config.get("AGENT_MODEL") === "gemini" ? new GeminiAgentModel(config) : new ClaudeAgentModel(config)),
-    },
+    { provide: AgentModel, useClass: ClaudeAgentModel },
     { provide: CatalogPhotos, useClass: PdfCatalogPhotos },
   ],
 })

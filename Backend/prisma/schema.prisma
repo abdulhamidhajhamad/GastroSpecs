@@ -285,21 +285,20 @@ enum AgentRunStatus {
 /// A chat between an admin and an AI agent (e.g. "ahmadprod"). The agent can only read the catalog and
 /// propose plans; anything it wants written waits in AgentPlan for an admin's approval.
 model AgentConversation {
-  id           String         @id @default(uuid())
+  id        String         @id @default(uuid())
   /// Which agent, e.g. "ahmadprod".
-  agent        String
-  title        String
-  status       AgentRunStatus @default(idle)
+  agent     String
+  title     String
+  status    AgentRunStatus @default(idle)
   /// Last failure shown to the admin, cleared on the next run.
-  lastError    String?
-  /// Catalog file attached to the chat: R2 key (for cropping photos) and Claude Files API id (for reading).
-  fileKey      String?
-  fileName     String?
-  claudeFileId String?
-  messages     AgentMessage[]
-  plans        AgentPlan[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  lastError String?
+  /// Catalog attached to the chat, kept in R2: sent to the model with each request and used to cut photos.
+  fileKey   String?
+  fileName  String?
+  messages  AgentMessage[]
+  plans     AgentPlan[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   @@index([agent, updatedAt])
   @@map("agent_conversations")

@@ -1,54 +1,50 @@
-import Anthropic, { toFile } from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AgentModel, type ModelMessage, type ModelReply, type ModelTool } from "../domain/agent-model";
-import { GEMINI_PARTS } from "./gemini-agent-model";
 
-const MODEL = "claude-opus-5-5";
+/** OpenRouter speaks Anthropic's Messages API at this address (the SDK adds /v1/messages). */
+const OPENROUTER_URL = "https://openrouter.ai/api";
+const DEFAULT_MODEL = { openrouter: "anthropic/claude-opus-5.5", anthropic: "claude-opus-5-5" };
 /** A whole catalog plan can be long; streaming keeps such replies clear of HTTP timeouts. */
 const MAX_TOKENS = 64_000;
 /** Tries for a turn whose streamed tool input couldn't be parsed (rare); API errors are retried by the SDK. */
 const PARSE_ATTEMPTS = 3;
 
-/** Drops parts stored for Gemini (a chat may have started on it); Claude only accepts its own block types. */
-function withoutGeminiParts(message: ModelMessage): ModelMessage {
-  if (typeof message.content === "string") return message;
-  const content = message.content.filter((block) => (block as { type: string }).type !== GEMINI_PARTS);
-  return { ...message, content } as ModelMessage;
-}
-
 /**
- * Claude through the official SDK. The key comes from ANTHROPIC_API_KEY (Render dashboard / Backend/.env);
- * without it the API still starts, and only agent chats answer with a clear error.
+ * Claude Opus through the official Anthropic SDK. With OPENROUTER_API_KEY it goes through OpenRouter (one
+ * account, credits); with ANTHROPIC_API_KEY instead, straight to Anthropic. AGENT_MODEL_ID overrides the
+ * model. Without a key the API still starts, and only agent chats answer with a clear error.
  */
 @Injectable()
 export class ClaudeAgentModel implements AgentModel {
-  readonly keyVariable = "ANTHROPIC_API_KEY";
   private client: Anthropic | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
+  get keyVariable() {
+    return this.anthropicKey() && !this.openRouterKey() ? "ANTHROPIC_API_KEY" : "OPENROUTER_API_KEY";
+  }
+
   isConfigured(): boolean {
-    return !!this.config.get<string>("ANTHROPIC_API_KEY");
+    return !!(this.openRouterKey() || this.anthropicKey());
   }
 
   async respond({ system, tools, messages }: { system: string; tools: ModelTool[]; messages: ModelMessage[] }): Promise<ModelReply> {
+    const model = this.config.get<string>("AGENT_MODEL_ID") || DEFAULT_MODEL[this.openRouterKey() ? "openrouter" : "anthropic"];
     for (let attempt = 1; ; attempt++) {
       try {
         return await this.anthropic()
-          .beta.messages.stream({
-            model: MODEL,
+          .messages.stream({
+            model,
             max_tokens: MAX_TOKENS,
-            // Thinking is always on for this model; effort sets how hard it works. Reading a catalog well is worth "high".
+            // Thinking is always on for Opus 5.5; effort sets how hard it works. Reading a catalog well is worth "high".
             output_config: { effort: "high" },
-            // If a safety check declines a turn, the API retries it on a suitable model instead of stopping.
-            betas: ["server-side-fallback-2026-07-01"],
-            fallbacks: "default",
             // The skills, tools and catalog repeat on every turn: cache them (a cached read costs a tenth).
             system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
             cache_control: { type: "ephemeral" },
             tools,
-            messages: messages.map(withoutGeminiParts),
+            messages,
           })
           .finalMessage();
       } catch (error) {
@@ -57,20 +53,21 @@ export class ClaudeAgentModel implements AgentModel {
     }
   }
 
-  async uploadFile(file: Buffer, fileName: string, mimeType: string): Promise<string> {
-    const uploaded = await this.anthropic().files.upload({ file: await toFile(file, fileName, { type: mimeType }) });
-    return uploaded.id;
-  }
-
-  async deleteFile(fileId: string): Promise<void> {
-    await this.anthropic().files.delete(fileId);
-  }
+  private openRouterKey = () => this.config.get<string>("OPENROUTER_API_KEY");
+  private anthropicKey = () => this.config.get<string>("ANTHROPIC_API_KEY");
 
   private anthropic(): Anthropic {
     if (this.client) return this.client;
-    const apiKey = this.config.get<string>("ANTHROPIC_API_KEY");
-    if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set on the server.");
-    this.client = new Anthropic({ apiKey });
+    const openRouterKey = this.openRouterKey();
+    const anthropicKey = this.anthropicKey();
+    if (openRouterKey) {
+      // OpenRouter wants its key as a Bearer token; an x-api-key would be taken for an Anthropic key.
+      this.client = new Anthropic({ baseURL: OPENROUTER_URL, authToken: openRouterKey, apiKey: null });
+    } else if (anthropicKey) {
+      this.client = new Anthropic({ apiKey: anthropicKey });
+    } else {
+      throw new Error("No AI key on the server (OPENROUTER_API_KEY).");
+    }
     return this.client;
   }
 }

@@ -60,7 +60,7 @@ export class AgentsController {
   /** Multipart: `text` and an optional catalog PDF in `file`. The agent answers in the background (202). */
   @Post("conversations/:id/messages")
   @HttpCode(HttpStatus.ACCEPTED)
-  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 32 * 1024 * 1024, files: 1 } }))
+  @UseInterceptors(FileInterceptor("file", { limits: { fileSize: 23 * 1024 * 1024, files: 1 } }))
   send(@Id() id: string, @Body() body: MessageDto, @UploadedFile() file?: Express.Multer.File) {
     return this.chat.sendMessage(id, body.text, file);
   }
