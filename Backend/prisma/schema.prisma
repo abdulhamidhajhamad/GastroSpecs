@@ -44,6 +44,8 @@ model Category {
   nameAr        String
   /// Display order everywhere: main equipment (cooking, frying…) first, small items last.
   sortOrder     Int                    @default(0)
+  /// Main categories only: the middle part of our product codes, e.g. "FRY" in "GS-FRY-0001".
+  codePrefix    String?                @unique
   imageKey      String?
   parentId      String?
   parent        Category?              @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
@@ -88,25 +90,64 @@ model BusinessTypeCategory {
   @@map("business_type_categories")
 }
 
-model Product {
-  id         String           @id @default(uuid())
-  slug       String           @unique
-  nameEn     String
-  nameAr     String
-  summaryEn  String?
-  summaryAr  String?
-  /// Specs shared by every variant: [{ labelEn, labelAr, value }].
-  specs      Json?
-  /// Hidden from the public site until true, so a product can be prepared first.
-  published  Boolean          @default(false)
-  categoryId String
-  category   Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  variants   ProductVariant[]
-  images     ProductImage[]
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+enum EnergyType {
+  electric
+  gas
+  /// Runs on both (e.g. gas burners with electric controls that need mains power to heat).
+  dual
+}
 
-  @@index([categoryId])
+enum GasType {
+  lpg
+  natural_gas
+}
+
+/// One machine as customers see it. Shown once on the site even when several suppliers make it
+/// (see SupplierProduct). Key specs are real columns so the catalog can sort and filter by them;
+/// anything else goes into `specs`.
+model Product {
+  id                    String            @id @default(uuid())
+  /// Our own product number, e.g. "GS-FRY-0001". Never a supplier's model code.
+  code                  String            @unique
+  slug                  String            @unique
+  nameEn                String
+  nameAr                String
+  summaryEn             String?
+  summaryAr             String?
+  /// Extra specs shared by every variant: [{ labelEn, labelAr, value }].
+  specs                 Json?
+  /// Outer dimensions in millimetres: width × depth × height.
+  widthMm               Int?
+  depthMm               Int?
+  heightMm              Int?
+  weightKg              Float?
+  energyType            EnergyType?
+  /// Gases the machine accepts; empty for electric machines.
+  gasTypes              GasType[]
+  /// Electric power, or rated heat input for gas machines.
+  powerKw               Float?
+  voltage               Int?
+  /// 1 (single-phase) or 3 (three-phase).
+  phases                Int?
+  frequencyHz           Int?
+  currentAmps           Float?
+  /// True when currentAmps was calculated from power and voltage instead of read from the supplier.
+  currentAmpsCalculated Boolean           @default(false)
+  /// e.g. ["CE"]. Shown on the product page.
+  certifications        String[]
+  /// Higher shows first inside a category: the biggest, most powerful machines lead.
+  displayRank           Int               @default(0)
+  /// Hidden from the public site until true, so a product can be prepared first.
+  published             Boolean           @default(false)
+  categoryId            String
+  category              Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants              ProductVariant[]
+  images                ProductImage[]
+  suppliers             SupplierProduct[]
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([categoryId, displayRank])
   @@index([published])
   @@map("products")
 }
@@ -144,6 +185,78 @@ model ProductImage {
   @@map("product_images")
 }
 
+/// A company we buy from. Admin-only: nothing about suppliers is ever shown on the public site.
+model Supplier {
+  id             String            @id @default(uuid())
+  name           String
+  /// Lower-case name without punctuation or company suffixes ("co", "ltd"…), used to spot duplicates.
+  normalizedName String            @unique
+  /// Name in the supplier's own language, e.g. Chinese.
+  nameLocal      String?
+  country        String?
+  city           String?
+  address        String?
+  website        String?
+  email          String?
+  phone          String?
+  /// Our own notes about this supplier (quality, terms, how dealing with them went…).
+  notes          String?
+  contacts       SupplierContact[]
+  products       SupplierProduct[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@map("suppliers")
+}
+
+/// A person we talk to at a supplier.
+model SupplierContact {
+  id         String   @id @default(uuid())
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  name       String
+  role       String?
+  email      String?
+  phone      String?
+  whatsapp   String?
+  wechat     String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([supplierId])
+  @@map("supplier_contacts")
+}
+
+/// "This supplier makes this product": their model code, their price when we have it, and where
+/// it is in their catalog. Searching our product code lists every supplier through this table.
+model SupplierProduct {
+  id             String   @id @default(uuid())
+  supplierId     String
+  supplier       Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// The supplier's own model code, e.g. "CNIX-E2000".
+  supplierModel  String
+  /// Our cost from this supplier in the smallest currency unit (cents). Admin-only.
+  priceAmount    Int?
+  /// ISO 4217 code, e.g. "USD".
+  priceCurrency  String?
+  /// Page in the supplier's catalog where the model appears.
+  catalogPage    Int?
+  /// The product photo as cut from their catalog, before cleaning. Kept for reference.
+  sourceImageKey String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  /// A supplier lists each model once; also lets an import skip models it already added.
+  @@unique([supplierId, supplierModel])
+  /// One link per supplier and product.
+  @@unique([supplierId, productId])
+  @@index([productId])
+  @@map("supplier_products")
+}
+
 enum LeadSource {
   catalog_download
   quote
@@ -161,4 +274,76 @@ model Lead {
 
   @@index([createdAt])
   @@map("leads")
+}
+
+enum AgentRunStatus {
+  idle
+  running
+  failed
+}
+
+/// A chat between an admin and an AI agent (e.g. "ahmadprod"). The agent can only read the catalog and
+/// propose plans; anything it wants written waits in AgentPlan for an admin's approval.
+model AgentConversation {
+  id           String         @id @default(uuid())
+  /// Which agent, e.g. "ahmadprod".
+  agent        String
+  title        String
+  status       AgentRunStatus @default(idle)
+  /// Last failure shown to the admin, cleared on the next run.
+  lastError    String?
+  /// Catalog file attached to the chat: R2 key (for cropping photos) and Claude Files API id (for reading).
+  fileKey      String?
+  fileName     String?
+  claudeFileId String?
+  messages     AgentMessage[]
+  plans        AgentPlan[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([agent, updatedAt])
+  @@map("agent_conversations")
+}
+
+/// One turn, append-only. `content` is the exact Claude API content (text, tool calls, tool results,
+/// thinking blocks) so the conversation can be replayed unchanged; `text` is what the chat shows.
+model AgentMessage {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  /// "user" or "assistant" (sent to Claude), or "event" (shown in the chat only, e.g. an import report).
+  role           String
+  content        Json
+  text           String?
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("agent_messages")
+}
+
+enum AgentPlanStatus {
+  pending
+  approved
+  rejected
+  superseded
+  executing
+  done
+  failed
+}
+
+/// What the agent wants to add, waiting for an admin. Nothing is written until it is approved, and then
+/// our own code (not the AI) carries it out through the normal, validated use cases.
+model AgentPlan {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  status         AgentPlanStatus   @default(pending)
+  plan           Json
+  /// Execution report: what was created, linked, skipped or failed.
+  result         Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([conversationId, createdAt])
+  @@map("agent_plans")
 }

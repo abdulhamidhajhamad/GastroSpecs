@@ -40,3 +40,10 @@ services:
         sync: false
       - key: R2_SECRET_ACCESS_KEY
         sync: false
+      # AI agents (ahmadprod): which model, and its key. Without a key the API runs; agents can't reply.
+      - key: AGENT_MODEL
+        value: gemini # or claude
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

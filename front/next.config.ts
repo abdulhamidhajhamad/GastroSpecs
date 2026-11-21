@@ -18,6 +18,24 @@ const nextConfig: NextConfig = {
     qualities: [65, 70, 75, 85],
     remotePatterns: [{ protocol: "https", hostname: new URL(siteConfig.mediaUrl).hostname }],
   },
+  /** Browser security headers on every page. */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Only HTTPS from now on (two years, subdomains too).
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          // Nobody may show the site inside a frame (clickjacking).
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
   turbopack: {
     resolveAlias: {
       "next-intl/config": "./src/i18n/request.ts",

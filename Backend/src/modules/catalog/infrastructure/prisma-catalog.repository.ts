@@ -4,7 +4,7 @@ import { PrismaService } from "@/shared/prisma/prisma.service";
 import { ObjectStorage } from "@/shared/storage/object-storage";
 import { CatalogRepository } from "../domain/catalog.repository";
 import type { BusinessType, BusinessTypeWithCategories, CategoryNode, CategoryRef, Product } from "../domain/catalog.types";
-import { catalogMapper, productInclude } from "./catalog.mapper";
+import { catalogMapper, productCardInclude, productInclude } from "./catalog.mapper";
 
 const bySortOrder = { sortOrder: "asc" } as const;
 const withChildren = { children: { orderBy: bySortOrder } } as const satisfies Prisma.CategoryInclude;
@@ -64,8 +64,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
     // Categories are two levels deep, so "the category or its parent" covers both cases without recursion.
     const rows = await this.prisma.product.findMany({
       where: { published: true, category: { OR: [{ slug }, { parent: { slug } }] } },
-      orderBy: { nameEn: "asc" },
-      include: productInclude,
+      // Biggest, most powerful machines first; the name only breaks ties.
+      orderBy: [{ displayRank: "desc" }, { nameEn: "asc" }],
+      include: productCardInclude,
     });
     return rows.map(this.map.toProduct);
   }
@@ -73,5 +74,9 @@ export class PrismaCatalogRepository implements CatalogRepository {
   async findProduct(slug: string): Promise<Product | null> {
     const row = await this.prisma.product.findFirst({ where: { slug, published: true }, include: productInclude });
     return row && this.map.toProduct(row);
+  }
+
+  listProductSlugs() {
+    return this.prisma.product.findMany({ where: { published: true }, select: { slug: true, updatedAt: true }, orderBy: { code: "asc" } });
   }
 }

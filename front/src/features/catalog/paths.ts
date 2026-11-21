@@ -4,4 +4,5 @@ export const catalogPaths = {
   equipmentView: "/catalog?view=equipment",
   businessType: (slug: string) => `/catalog/business/${slug}`,
   category: (slug: string) => `/catalog/equipment/${slug}`,
+  product: (slug: string) => `/catalog/products/${slug}`,
 };

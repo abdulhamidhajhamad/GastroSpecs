@@ -6,6 +6,8 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
 import { HealthModule } from "./modules/health/health.module";
 import { LeadsModule } from "./modules/leads/leads.module";
+import { SourcingModule } from "./modules/sourcing/sourcing.module";
+import { AgentsModule } from "./modules/agents/agents.module";
 
 /**
  * Root module. Composition only — no business logic lives here.
@@ -20,6 +22,8 @@ import { LeadsModule } from "./modules/leads/leads.module";
     AuthModule,
     CatalogModule,
     LeadsModule,
+    SourcingModule,
+    AgentsModule,
     HealthModule,
   ],
 })

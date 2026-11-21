@@ -17,11 +17,12 @@ type Name = { slug: string; en: string; ar: string };
 
 /**
  * Main categories in display order: the big, high-value equipment first (cooking, frying, dishwashing,
- * refrigeration), small preparation items last. Each with its subcategories.
+ * refrigeration), small preparation items last. Each with its subcategories and the code prefix
+ * of its products (e.g. "FRY" → GS-FRY-0001). Never change a prefix once products use it.
  */
-const categories: Array<Name & { children: Name[] }> = [
+const categories: Array<Name & { code: string; children: Name[] }> = [
   {
-    slug: "cooking", en: "Cooking", ar: "معدات الطبخ",
+    slug: "cooking", code: "COK", en: "Cooking", ar: "معدات الطبخ",
     children: [
       { slug: "cooking-lines", en: "Cooking lines", ar: "خطوط طبخ" },
       { slug: "grills", en: "Grills", ar: "شوايات" },
@@ -29,21 +30,21 @@ const categories: Array<Name & { children: Name[] }> = [
     ],
   },
   {
-    slug: "frying", en: "Frying", ar: "القلي",
+    slug: "frying", code: "FRY", en: "Frying", ar: "القلي",
     children: [
       { slug: "open-fryers", en: "Open fryers", ar: "قلايات مفتوحة" },
       { slug: "pressure-fryers", en: "Pressure fryers", ar: "قلايات ضغط" },
     ],
   },
   {
-    slug: "dishwashing", en: "Dishwashing", ar: "الغسيل",
+    slug: "dishwashing", code: "DSH", en: "Dishwashing", ar: "الغسيل",
     children: [
       { slug: "dishwashers", en: "Dishwashers", ar: "غسالات صحون" },
       { slug: "sinks", en: "Sinks", ar: "مغاسل" },
     ],
   },
   {
-    slug: "refrigeration", en: "Refrigeration", ar: "التبريد",
+    slug: "refrigeration", code: "REF", en: "Refrigeration", ar: "التبريد",
     children: [
       { slug: "refrigerators", en: "Refrigerators", ar: "ثلاجات" },
       { slug: "freezers", en: "Freezers", ar: "فريزرات" },
@@ -51,7 +52,7 @@ const categories: Array<Name & { children: Name[] }> = [
     ],
   },
   {
-    slug: "ovens", en: "Ovens", ar: "الأفران",
+    slug: "ovens", code: "OVN", en: "Ovens", ar: "الأفران",
     children: [
       { slug: "convection-ovens", en: "Convection ovens", ar: "أفران كونفكشن" },
       { slug: "combi-ovens", en: "Combi ovens", ar: "أفران كومبي" },
@@ -59,7 +60,7 @@ const categories: Array<Name & { children: Name[] }> = [
     ],
   },
   {
-    slug: "display", en: "Display", ar: "العرض",
+    slug: "display", code: "DSP", en: "Display", ar: "العرض",
     children: [
       { slug: "gelato-showcases", en: "Gelato showcases", ar: "واجهات جيلاتو" },
       { slug: "pastry-displays", en: "Pastry displays", ar: "واجهات حلويات" },
@@ -67,14 +68,14 @@ const categories: Array<Name & { children: Name[] }> = [
     ],
   },
   {
-    slug: "holding", en: "Holding & warming", ar: "الحفظ والتسخين",
+    slug: "holding", code: "HLD", en: "Holding & warming", ar: "الحفظ والتسخين",
     children: [
       { slug: "food-warmers", en: "Food warmers", ar: "وورمرات" },
       { slug: "holding-cabinets", en: "Holding cabinets", ar: "خزائن حفظ" },
     ],
   },
   {
-    slug: "stainless", en: "Stainless steel", ar: "الستانلس",
+    slug: "stainless", code: "STL", en: "Stainless steel", ar: "الستانلس",
     children: [
       { slug: "work-tables", en: "Work tables", ar: "طاولات عمل" },
       { slug: "shelving", en: "Shelving", ar: "رفوف" },
@@ -82,7 +83,7 @@ const categories: Array<Name & { children: Name[] }> = [
     ],
   },
   {
-    slug: "preparation", en: "Preparation", ar: "التحضير",
+    slug: "preparation", code: "PRP", en: "Preparation", ar: "التحضير",
     children: [
       { slug: "mixers", en: "Mixers", ar: "عجّانات" },
       { slug: "mincers", en: "Mincers", ar: "فرّامات" },
@@ -141,8 +142,8 @@ async function seedCategories() {
     const parentOrder = (i + 1) * 100;
     const parent = await prisma.category.upsert({
       where: { slug: main.slug },
-      update: { nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder, parentId: null },
-      create: { slug: main.slug, nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder },
+      update: { nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder, codePrefix: main.code, parentId: null },
+      create: { slug: main.slug, nameEn: main.en, nameAr: main.ar, sortOrder: parentOrder, codePrefix: main.code },
     });
 
     for (const [j, child] of main.children.entries()) {

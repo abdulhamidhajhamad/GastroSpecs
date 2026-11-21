@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -6,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   UploadedFile,
@@ -15,6 +17,8 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { JwtAuthGuard } from "@/modules/auth/presentation/jwt-auth.guard";
 import { MAX_IMAGE_BYTES } from "@/shared/storage/image-file";
+import { CreateProductDto, UpdateProductDto } from "../application/admin/dto/product.dto";
+import { ProductAdminUseCases } from "../application/admin/product-admin.use-cases";
 import { ReplaceCategoryImageUseCase, RemoveCategoryImageUseCase } from "../application/admin/category-image.use-cases";
 import { AddProductImageUseCase, RemoveProductImageUseCase } from "../application/admin/product-image.use-cases";
 import { GetCategoryTreeUseCase } from "../application/get-category-tree.use-case";
@@ -25,7 +29,7 @@ const ImageUpload = () => UseInterceptors(FileInterceptor("file", { limits: { fi
 
 const adminCategory = (c: CategoryRef) => ({ id: c.id, slug: c.slug, nameEn: c.name.en, nameAr: c.name.ar, imageUrl: c.imageUrl });
 
-/** Dashboard API for catalog images. Every route requires a signed-in admin. */
+/** Dashboard API for products and catalog images. Every route requires a signed-in admin. */
 @Controller("admin/catalog")
 @UseGuards(JwtAuthGuard)
 export class CatalogAdminController {
@@ -35,6 +39,7 @@ export class CatalogAdminController {
     private readonly removeCategoryImage: RemoveCategoryImageUseCase,
     private readonly addProductImage: AddProductImageUseCase,
     private readonly removeProductImage: RemoveProductImageUseCase,
+    private readonly products: ProductAdminUseCases,
   ) {}
 
   /** Both languages at once, since the admin edits both. */
@@ -53,6 +58,31 @@ export class CatalogAdminController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteCategoryImage(@Param("id", ParseUUIDPipe) id: string) {
     return this.removeCategoryImage.execute(id);
+  }
+
+  /** Every field in both languages, including unpublished products. */
+  @Get("products/:id")
+  getProduct(@Param("id", ParseUUIDPipe) id: string) {
+    return this.products.get(id);
+  }
+
+  /** Answers the new product's id, code ("GS-FRY-0001") and slug. Starts unpublished unless `published` is sent. */
+  @Post("products")
+  createProduct(@Body() body: CreateProductDto) {
+    return this.products.create(body);
+  }
+
+  @Patch("products/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  updateProduct(@Param("id", ParseUUIDPipe) id: string, @Body() body: UpdateProductDto) {
+    return this.products.update(id, body);
+  }
+
+  /** Also deletes its photos and its supplier links. */
+  @Delete("products/:id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteProduct(@Param("id", ParseUUIDPipe) id: string) {
+    return this.products.delete(id);
   }
 
   @Post("products/:id/images")

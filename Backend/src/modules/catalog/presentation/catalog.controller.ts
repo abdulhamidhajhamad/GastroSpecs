@@ -4,7 +4,7 @@ import { GetBusinessTypeCatalogUseCase } from "../application/get-business-type-
 import { GetBusinessTypesUseCase } from "../application/get-business-types.use-case";
 import { GetCategoryCatalogUseCase } from "../application/get-category-catalog.use-case";
 import { GetCategoryTreeUseCase } from "../application/get-category-tree.use-case";
-import { GetProductUseCase } from "../application/get-product.use-case";
+import { GetProductUseCase, ListProductSlugsUseCase } from "../application/get-product.use-case";
 import { catalogPresenter } from "./catalog.presenter";
 
 /** Public, read-only catalog API. Every route takes `?locale=en|ar`. */
@@ -16,6 +16,7 @@ export class CatalogController {
     private readonly getBusinessTypes: GetBusinessTypesUseCase,
     private readonly getBusinessTypeCatalog: GetBusinessTypeCatalogUseCase,
     private readonly getProduct: GetProductUseCase,
+    private readonly listProductSlugs: ListProductSlugsUseCase,
   ) {}
 
   @Get("categories")
@@ -40,6 +41,12 @@ export class CatalogController {
     const present = catalogPresenter(locale);
     const { businessType, categories } = await this.getBusinessTypeCatalog.execute(slug);
     return { businessType: present.businessType(businessType), categories: categories.map(present.category) };
+  }
+
+  /** Every published product's slug, for the sitemap. */
+  @Get("products")
+  productSlugs() {
+    return this.listProductSlugs.execute();
   }
 
   @Get("products/:slug")
