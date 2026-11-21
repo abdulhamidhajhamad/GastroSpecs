@@ -8,10 +8,17 @@ export type CroppedPhoto = {
   warnings: string[];
 };
 
+export type CropOptions = {
+  /** Supplier logos on the machine, in page fractions like the box: painted over with the metal around them. */
+  logos?: PhotoBox[];
+  /** Longest side of the result in pixels. */
+  maxSize?: number;
+};
+
 /** An opened catalog. Crop products page by page: the last decoded page is kept for the next crop. */
 export interface CatalogPhotoReader {
-  /** `page` is 1-based; `maxSize` is the longest side of the result in pixels. Throws a readable Error. */
-  crop(page: number, box: PhotoBox, maxSize?: number): Promise<CroppedPhoto>;
+  /** `page` is 1-based. Throws a readable Error. */
+  crop(page: number, box: PhotoBox, options?: CropOptions): Promise<CroppedPhoto>;
 }
 
 /** Port: cuts product photos out of a catalog file. The abstract class doubles as the DI token. */

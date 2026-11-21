@@ -9,6 +9,13 @@ const text = (description: string) => ({ type: "string", description });
 const number = (description: string) => ({ type: "number", description });
 const integer = (description: string) => ({ type: "integer", description });
 const nullable = <T extends object>(schema: T) => ({ anyOf: [schema, { type: "null" }] });
+/** A rectangle on a PDF page, as fractions of the page (0,0 = top-left). */
+const boxSchema = {
+  type: "object",
+  properties: { left: number("0-1"), top: number("0-1"), right: number("0-1"), bottom: number("0-1") },
+  required: ["left", "top", "right", "bottom"],
+  additionalProperties: false,
+};
 
 const query = {
   type: "object" as const,
@@ -128,11 +135,11 @@ export const AHMADPROD_TOOLS: ModelTool[] = [
                 description: "Where this product's photo is: PDF page and box as fractions of the page (0,0 = top-left).",
                 properties: {
                   page: integer("PDF page, 1-based."),
-                  box: {
-                    type: "object",
-                    properties: { left: number("0-1"), top: number("0-1"), right: number("0-1"), bottom: number("0-1") },
-                    required: ["left", "top", "right", "bottom"],
-                    additionalProperties: false,
+                  box: boxSchema,
+                  logos: {
+                    type: "array",
+                    items: boxSchema,
+                    description: "Every supplier logo, badge or brand sticker on the machine, as page-fraction boxes inside `box`. They are painted out.",
                   },
                 },
                 required: ["page", "box"],
@@ -140,7 +147,7 @@ export const AHMADPROD_TOOLS: ModelTool[] = [
               },
               priceAmount: nullable(integer("Our cost in cents, only if given.")),
               priceCurrency: nullable(text("ISO code, e.g. USD, only with priceAmount.")),
-              notes: text("Anything the admin should check for this product (logo on machine, unclear value…)."),
+              notes: text("Anything the admin should check for this product (unclear value, logo too big to paint out…)."),
             },
             required: ["supplierModel", "catalogPage", "action"],
             additionalProperties: false,

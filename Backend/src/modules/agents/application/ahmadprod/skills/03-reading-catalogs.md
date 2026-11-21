@@ -54,7 +54,13 @@ product's photo only**, as fractions of the page: `left`, `top`, `right`, `botto
 - Frame the whole machine with a small margin; don't include spec tables, captions, other machines or icons.
 - Prefer the photo on a plain light background. If the only photo has a dark or busy background, still give
   the box and add a note "background needs cleaning".
-- If the supplier's logo or brand is printed on the machine itself, add a note "logo on the machine". The
-  admin will clean it.
+- **Logos must never reach the site.** Look closely at every machine for the supplier's logo, brand badge
+  (often a small coloured oval), brand nameplate or brand text on a panel. Give each one in `image.logos`
+  as a box (page fractions, like `box`) drawn tightly around it with a hair of margin; it must sit inside
+  `box`. GastroSpecs paints it over with the metal around it. Leave real parts alone: buttons, switches,
+  safety labels, conveyor belts, coloured handles.
+- Every machine of a series usually carries the same badge in the same place: check each photo anyway.
+- If a logo is large, curved or covers detail (a whole front panel, text across a display), still mark it
+  and add a note "check logo removal". No usable photo is better than one showing the supplier's brand.
 - If several products share one photo, give the box of the photo for each and note it.
 - No usable photo → leave `image` out and say so in `notes`.

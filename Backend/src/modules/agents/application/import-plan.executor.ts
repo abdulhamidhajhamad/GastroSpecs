@@ -122,7 +122,7 @@ export class ImportPlanExecutor {
     if (!item.image) return ["no photo in the plan"];
     if (!reader) return ["catalog file missing: photo not added"];
     try {
-      const photo = await reader.crop(item.image.page, item.image.box);
+      const photo = await reader.crop(item.image.page, item.image.box, { logos: item.image.logos });
       await this.productImages.execute(productId, { buffer: photo.image, size: photo.image.length });
       return photo.warnings.map((w) => `photo: ${w}`);
     } catch (error) {

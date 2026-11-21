@@ -37,7 +37,12 @@ class PhotoBoxDto {
 class PlanImageDto {
   @IsInt() @Min(1) page!: number;
   @ValidateNested() @Type(() => PhotoBoxDto) box!: PhotoBoxDto;
+  /** Supplier logos on the machine, painted out when the photo is cut. */
+  @IsOptional() @IsArray() @ArrayMaxSize(10) @ValidateNested({ each: true }) @Type(() => PhotoBoxDto) logos?: PhotoBoxDto[];
 }
+
+const isBox = (b: PhotoBoxDto) => b.right > b.left && b.bottom > b.top;
+const overlaps = (a: PhotoBoxDto, b: PhotoBoxDto) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
 class PlanSupplierDto extends CreateSupplierDto {
   /** Set when search_suppliers found it: nothing about the supplier is changed then. */
@@ -98,7 +103,11 @@ export async function checkPlan(input: unknown, subcategories: SubcategoryIds): 
     seen.add(model);
 
     const box = item.image?.box;
-    if (box && (box.right <= box.left || box.bottom <= box.top)) errors.push(`${at}.image.box: right must be > left and bottom > top`);
+    if (box && !isBox(box)) errors.push(`${at}.image.box: right must be > left and bottom > top`);
+    for (const [j, logo] of (item.image?.logos ?? []).entries()) {
+      if (!isBox(logo)) errors.push(`${at}.image.logos.${j}: right must be > left and bottom > top`);
+      else if (box && !overlaps(logo, box)) errors.push(`${at}.image.logos.${j}: must be on the product's photo (inside image.box)`);
+    }
 
     if (item.action === "link") {
       items.push({ ...item, product: undefined });

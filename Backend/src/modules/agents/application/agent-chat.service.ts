@@ -158,13 +158,13 @@ export class AgentChatService {
   async previewPhoto(planId: string, index: number): Promise<Buffer> {
     const plan = orNotFound(await this.chats.findPlan(planId), "Plan");
     const conversation = orNotFound(await this.chats.findConversation(plan.conversationId), "Conversation");
-    const image = (plan.plan as { products?: { image?: { page: number; box: never } }[] }).products?.[index]?.image;
+    const image = (plan.plan as { products?: { image?: { page: number; box: never; logos?: never[] } }[] }).products?.[index]?.image;
     if (!image || !conversation.fileKey) throw new NotFoundException("This item has no photo");
 
     const key = conversation.fileKey;
     if (this.previewCatalog?.key !== key) this.previewCatalog = { key, reader: this.storage.get(key).then((pdf) => this.photos.open(pdf)) };
     const reader = await this.previewCatalog.reader;
-    return (await reader.crop(image.page, image.box, 480)).image;
+    return (await reader.crop(image.page, image.box, { logos: image.logos, maxSize: 480 })).image;
   }
 
   async deleteConversation(id: string) {

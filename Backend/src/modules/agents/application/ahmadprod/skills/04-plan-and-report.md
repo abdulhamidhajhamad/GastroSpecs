@@ -25,6 +25,7 @@ twice and that every `categorySlug` came from `list_categories`.
 - جديد: <n> (<category>: <n>, …)
 - ربط بمنتج موجود: <n> (<model> → <our code>)
 - بدون صورة صالحة: <n>
+- شعارات المورد اللي رح تنمسح من الصور: <n>
 
 **ملاحظات تحتاج انتباهك:**
 - <page n>: <what and why>

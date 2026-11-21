@@ -4,7 +4,8 @@ import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRawStream } from
 import sharp from "sharp";
 
 type Sharp = ReturnType<typeof sharp>;
-import { CatalogPhotos, type CatalogPhotoReader, type CroppedPhoto, type PhotoBox } from "../domain/catalog-photos";
+import { CatalogPhotos, type CatalogPhotoReader, type CroppedPhoto, type CropOptions, type PhotoBox } from "../domain/catalog-photos";
+import { paintOut } from "./paint-out";
 
 /** Extra room around the agent's box, as a share of the box size: its boxes are close but not exact. */
 const MARGIN = 0.04;
@@ -76,7 +77,7 @@ class PdfCatalogPhotoReader implements CatalogPhotoReader {
 
   constructor(private readonly pdf: PDFDocument) {}
 
-  async crop(page: number, box: PhotoBox, maxSize = 1600): Promise<CroppedPhoto> {
+  async crop(page: number, box: PhotoBox, { logos = [], maxSize = 1600 }: CropOptions = {}): Promise<CroppedPhoto> {
     const picture = this.pagePicture(page);
     const marginX = (box.right - box.left) * MARGIN;
     const marginY = (box.bottom - box.top) * MARGIN;
@@ -94,6 +95,17 @@ class PdfCatalogPhotoReader implements CatalogPhotoReader {
     // Centre it on a white square with some air around it, like every product photo on the site.
     // Two pipelines on purpose: sharp runs resize before extend whatever order they're written in.
     const cut = await picture.input().extract(region).toColourspace("srgb").flatten({ background: WHITE }).raw().toBuffer({ resolveWithObject: true });
+    if (logos.length) {
+      // Page fractions → pixels of the cut region, a couple of pixels wider so no logo edge is left.
+      const grow = 2;
+      paintOut(cut.data, width, height, logos.map((l) => ({
+        left: l.left * picture.width - left - grow,
+        top: l.top * picture.height - top - grow,
+        right: l.right * picture.width - left + grow,
+        bottom: l.bottom * picture.height - top + grow,
+      })));
+      warnings.push(`${logos.length} logo(s) painted out: check the photo`);
+    }
     const scale = Math.min(1, maxSize / (Math.max(width, height) * 1.12));
     const w = Math.round(width * scale);
     const h = Math.round(height * scale);
