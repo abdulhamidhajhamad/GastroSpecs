@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { ChangePasswordUseCase } from "./application/change-password.use-case";
 import { SignInUseCase } from "./application/sign-in.use-case";
 import { AdminUserRepository } from "./domain/admin-user.repository";
@@ -17,6 +18,9 @@ import { SessionCookie } from "./presentation/session-cookie";
  */
 @Module({
   imports: [
+    // Password guessing: 5 attempts per minute per visitor (see AuthController). Kept in memory, which is
+    // enough for one server; a shared store is needed only when the API runs on several instances.
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 5 }]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

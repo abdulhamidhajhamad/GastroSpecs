@@ -74,15 +74,30 @@ Public catalog routes take `?locale=en|ar` (default `en`).
 | GET    | /api/catalog/categories/:slug       | public | A category's products, grouped by subcategory.         |
 | GET    | /api/catalog/business-types         | public | Business types (Fried chicken, Hotel…).                |
 | GET    | /api/catalog/business-types/:slug   | public | A business type's products, grouped by subcategory.    |
-| GET    | /api/catalog/products/:slug         | public | One product with variants and images.                  |
+| GET    | /api/catalog/products               | public | Slug and last change of every published product (sitemap). |
+| GET    | /api/catalog/products/:slug         | public | One product: code, key specs, extra specs, images. No supplier data. |
 | POST   | /api/leads                          | public | Save a lead (PDF download or quote). Email or phone.   |
 | GET    | /api/leads                          | admin  | All leads, newest first.                               |
 | POST   | /api/auth/change-password           | admin  | Change your own password.                              |
 | GET    | /api/admin/catalog/categories       | admin  | Category tree, both languages, with image URLs.        |
 | PUT    | /api/admin/catalog/categories/:id/image | admin | Upload or replace a category image (field `file`). |
 | DELETE | /api/admin/catalog/categories/:id/image | admin | Remove a category image.                           |
+| GET    | /api/admin/catalog/products/:id     | admin  | Every field of a product, published or not.            |
+| POST   | /api/admin/catalog/products         | admin  | Create; answers the new code (`GS-FRY-0001`) and slug. Amps and display rank are worked out. |
+| PATCH  | /api/admin/catalog/products/:id     | admin  | Change any fields (`null` clears). Code never changes.  |
+| DELETE | /api/admin/catalog/products/:id     | admin  | Delete with its photos and supplier links.             |
 | POST   | /api/admin/catalog/products/:id/images  | admin | Add a product image (field `file`).                |
 | DELETE | /api/admin/catalog/products/:id/images/:imageId | admin | Remove a product image.                    |
+| GET    | /api/admin/sourcing/suppliers?q=    | admin  | Suppliers (name search) with contact / product counts. |
+| GET    | /api/admin/sourcing/suppliers/:id   | admin  | A supplier with notes, contacts and products + cost.   |
+| POST   | /api/admin/sourcing/suppliers       | admin  | Create. 409 with `supplierId` if the company exists (however it is spelled). |
+| PATCH / DELETE | /api/admin/sourcing/suppliers/:id | admin | Edit / delete (contacts and links go too; products stay). |
+| POST   | /api/admin/sourcing/suppliers/:id/contacts | admin | Add a contact.                                 |
+| PATCH / DELETE | /api/admin/sourcing/contacts/:id | admin | Edit / remove a contact.                           |
+| GET    | /api/admin/sourcing/products?q=     | admin  | Search by our code, name or a supplier model → products with every supplier and price (cheapest first). |
+| GET    | /api/admin/sourcing/products/:id/offers | admin | A product's suppliers, cheapest first.            |
+| POST   | /api/admin/sourcing/offers          | admin  | Link a supplier to a product: model, cost (cents + currency, optional), catalog page. |
+| PATCH / DELETE | /api/admin/sourcing/offers/:id | admin | Edit (e.g. the price) / unlink.                      |
 
 Admin routes need the `gs_admin_session` cookie set by sign-in: httpOnly (page scripts can't read it),
 SameSite=Strict (other sites can't send it), path `/api`. In production `COOKIE_DOMAIN=.gastrospecs.com` lets
@@ -100,6 +115,32 @@ products/<productId>/<random>.webp
 - The database stores the **key** only; `R2_PUBLIC_URL` turns it into a URL. Changing domain = one `.env` line.
 - Uploads are checked by their real file signature (JPEG, PNG, WebP, AVIF), up to 10 MB.
 - Replacing or removing an image deletes the old file. Cloudflare's edge may keep serving it for up to a day.
+
+## AI agents (ahmadprod)
+
+`modules/agents` runs dashboard agents on Claude (`ANTHROPIC_API_KEY`; without it the API runs and the
+chat says the key is missing). **ahmadprod** imports supplier catalogs:
+
+1. The admin sends a catalog PDF in the chat (stored in R2 under `agent-files/`, and uploaded to Claude).
+2. The agent reads it and uses read-only tools (`list_categories`, `search_suppliers`, `search_products`),
+   then saves one plan with `propose_import_plan`. It cannot write anything itself.
+3. The admin reviews the plan (with photo previews cut from the catalog) and approves or rejects it.
+4. On approval, `ImportPlanExecutor` (plain code, no AI) re-checks the plan with the same DTOs as the
+   dashboard and adds it through the normal use cases: supplier, contacts, draft products, supplier links,
+   photos. Models the supplier already has are skipped, so running a plan twice duplicates nothing.
+
+Its skills are the Markdown files in `modules/agents/application/ahmadprod/skills/` (copied to `dist` by
+`nest-cli.json`); edit them to change how it works. Photos are cut with pdf-lib + sharp from catalogs whose
+pages are pictures; other pages get a note to add the photo by hand.
+
+| Method | Path | What |
+| ------ | ---- | ---- |
+| GET | /api/admin/agents | The agents. |
+| GET / POST | /api/admin/agents/:agent/conversations | List / start chats. |
+| GET / DELETE | /api/admin/agents/conversations/:id | A chat with messages and plans (poll while running) / delete it with its file. |
+| POST | /api/admin/agents/conversations/:id/messages | Multipart `text` + optional `file` (PDF ≤ 32 MB). 202: the agent answers in the background. |
+| POST | /api/admin/agents/plans/:id/approve · /reject | Approve (202, runs in the background) or reject a pending plan. |
+| GET | /api/admin/agents/plans/:id/photos/:index | Preview of the photo a plan item would get. |
 
 ## Data model
 

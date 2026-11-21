@@ -33,10 +33,12 @@ export function catalogPresenter(locale: Locale) {
   });
 
   const product = (p: Product) => ({
+    code: p.code,
     slug: p.slug,
     name: pick(p.name, locale),
     summary: pick(p.summary, locale),
     category: category(p.category),
+    technical: p.technical,
     specs: p.specs.map(spec),
     variants: p.variants.map((v) => ({
       sku: v.sku,

@@ -275,3 +275,75 @@ model Lead {
   @@index([createdAt])
   @@map("leads")
 }
+
+enum AgentRunStatus {
+  idle
+  running
+  failed
+}
+
+/// A chat between an admin and an AI agent (e.g. "ahmadprod"). The agent can only read the catalog and
+/// propose plans; anything it wants written waits in AgentPlan for an admin's approval.
+model AgentConversation {
+  id           String         @id @default(uuid())
+  /// Which agent, e.g. "ahmadprod".
+  agent        String
+  title        String
+  status       AgentRunStatus @default(idle)
+  /// Last failure shown to the admin, cleared on the next run.
+  lastError    String?
+  /// Catalog file attached to the chat: R2 key (for cropping photos) and Claude Files API id (for reading).
+  fileKey      String?
+  fileName     String?
+  claudeFileId String?
+  messages     AgentMessage[]
+  plans        AgentPlan[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([agent, updatedAt])
+  @@map("agent_conversations")
+}
+
+/// One turn, append-only. `content` is the exact Claude API content (text, tool calls, tool results,
+/// thinking blocks) so the conversation can be replayed unchanged; `text` is what the chat shows.
+model AgentMessage {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  /// "user" or "assistant" (sent to Claude), or "event" (shown in the chat only, e.g. an import report).
+  role           String
+  content        Json
+  text           String?
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("agent_messages")
+}
+
+enum AgentPlanStatus {
+  pending
+  approved
+  rejected
+  superseded
+  executing
+  done
+  failed
+}
+
+/// What the agent wants to add, waiting for an admin. Nothing is written until it is approved, and then
+/// our own code (not the AI) carries it out through the normal, validated use cases.
+model AgentPlan {
+  id             String            @id @default(uuid())
+  conversationId String
+  conversation   AgentConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  status         AgentPlanStatus   @default(pending)
+  plan           Json
+  /// Execution report: what was created, linked, skipped or failed.
+  result         Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([conversationId, createdAt])
+  @@map("agent_plans")
+}

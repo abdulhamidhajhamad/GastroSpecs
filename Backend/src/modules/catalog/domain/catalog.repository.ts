@@ -16,4 +16,6 @@ export abstract class CatalogRepository {
   /** Products of the category, or of all its subcategories when it is a main category. */
   abstract listProductsByCategory(slug: string): Promise<Product[]>;
   abstract findProduct(slug: string): Promise<Product | null>;
+  /** Slug and last change of every published product, for the sitemap. */
+  abstract listProductSlugs(): Promise<{ slug: string; updatedAt: Date }[]>;
 }

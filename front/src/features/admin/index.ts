@@ -1,5 +1,12 @@
+export { AgentChatPage } from "./components/agents/AgentChatPage";
+export { AgentsPage } from "./components/agents/AgentsPage";
+export { AdminPage } from "./components/AdminPage";
 export { CategoryImages } from "./components/CategoryImages";
 export { ChangePasswordForm } from "./components/ChangePasswordForm";
+export { ProductEditor } from "./components/products/ProductEditor";
+export { ProductsPage } from "./components/products/ProductsPage";
 export { RequireAdmin } from "./components/RequireAdmin";
 export { SignInForm } from "./components/SignInForm";
 export { SignOutButton } from "./components/SignOutButton";
+export { SupplierPage } from "./components/suppliers/SupplierPage";
+export { SuppliersPage } from "./components/suppliers/SuppliersPage";

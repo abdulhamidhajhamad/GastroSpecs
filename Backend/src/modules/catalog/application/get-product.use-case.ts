@@ -10,3 +10,13 @@ export class GetProductUseCase {
     return orNotFound(await this.catalog.findProduct(slug), "Product");
   }
 }
+
+/** Every published product's slug and last change, for the sitemap. */
+@Injectable()
+export class ListProductSlugsUseCase {
+  constructor(private readonly catalog: CatalogRepository) {}
+
+  execute() {
+    return this.catalog.listProductSlugs();
+  }
+}

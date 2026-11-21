@@ -1,4 +1,4 @@
-import type { BusinessTypePage, BusinessTypeSummary, CategoryNode, CategoryPage } from "./types";
+import type { BusinessTypePage, BusinessTypeSummary, CategoryNode, CategoryPage, Product } from "./types";
 
 /**
  * Catalog reads, done on the server. `CATALOG_API_URL` points at the backend (e.g. http://localhost:4000/api).
@@ -12,11 +12,12 @@ const CATALOG_API_URL = process.env.CATALOG_API_URL?.replace(/\/$/, "");
  */
 const REVALIDATE_SECONDS = process.env.NODE_ENV === "development" ? 0 : 300;
 
-async function get<T>(path: string, locale: string): Promise<T | null> {
+async function get<T>(path: string, locale?: string): Promise<T | null> {
   if (!CATALOG_API_URL) return null;
 
   try {
-    const res = await fetch(`${CATALOG_API_URL}/catalog${path}?locale=${encodeURIComponent(locale)}`, {
+    const query = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+    const res = await fetch(`${CATALOG_API_URL}/catalog${path}${query}`, {
       next: { revalidate: REVALIDATE_SECONDS },
     });
     if (!res.ok) {
@@ -37,4 +38,7 @@ export const catalogApi = {
   businessType: (slug: string, locale: string) => get<BusinessTypePage>(`/business-types/${slugPath(slug)}`, locale),
   categories: (locale: string) => get<CategoryNode[]>("/categories", locale),
   category: (slug: string, locale: string) => get<CategoryPage>(`/categories/${slugPath(slug)}`, locale),
+  product: (slug: string, locale: string) => get<Product>(`/products/${slugPath(slug)}`, locale),
+  /** Every published product, for the sitemap. */
+  productSlugs: () => get<{ slug: string; updatedAt: string }[]>("/products"),
 };

@@ -1,11 +1,17 @@
 import type { Prisma } from "@prisma/client";
 import type { BusinessType, CategoryRef, Product, Spec } from "../domain/catalog.types";
 
-/** Relations every product query loads, so all of them map through the same `toProduct`. */
+/** Relations a product page loads. */
 export const productInclude = {
   category: true,
   variants: { orderBy: { sortOrder: "asc" } },
   images: { orderBy: { sortOrder: "asc" } },
+} as const satisfies Prisma.ProductInclude;
+
+/** Same as a product page, but only the main photo: a category lists many products and shows one photo each. */
+export const productCardInclude = {
+  ...productInclude,
+  images: { orderBy: { sortOrder: "asc" }, take: 1 },
 } as const satisfies Prisma.ProductInclude;
 
 type ProductRow = Prisma.ProductGetPayload<{ include: typeof productInclude }>;
@@ -49,10 +55,26 @@ export function catalogMapper(urlOf: UrlOf) {
 
   const toProduct = (row: ProductRow): Product => ({
     id: row.id,
+    code: row.code,
     slug: row.slug,
     name: { en: row.nameEn, ar: row.nameAr },
     summary: { en: row.summaryEn, ar: row.summaryAr },
     category: toCategoryRef(row.category),
+    technical: {
+      widthMm: row.widthMm,
+      depthMm: row.depthMm,
+      heightMm: row.heightMm,
+      weightKg: row.weightKg,
+      energyType: row.energyType,
+      gasTypes: row.gasTypes,
+      powerKw: row.powerKw,
+      voltage: row.voltage,
+      phases: row.phases,
+      frequencyHz: row.frequencyHz,
+      currentAmps: row.currentAmps,
+      currentAmpsCalculated: row.currentAmpsCalculated,
+      certifications: row.certifications,
+    },
     specs: toSpecs(row.specs),
     variants: row.variants.map((v) => ({
       id: v.id,

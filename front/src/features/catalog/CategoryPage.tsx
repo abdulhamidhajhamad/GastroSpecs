@@ -21,7 +21,7 @@ export async function CategoryPage({ slug }: { slug: string }) {
 
   const { category, groups } = page;
   const isMain = category.children.length > 0;
-  const labels = { from: t("grid.from"), noImage: t("grid.noImage") };
+  const noImage = t("grid.noImage");
 
   return (
     <>
@@ -33,7 +33,7 @@ export async function CategoryPage({ slug }: { slug: string }) {
           {isMain && (
             <TileGrid dense>
               {category.children.map((c) => (
-                <Tile key={c.slug} href={catalogPaths.category(c.slug)} title={c.name} imageUrl={c.imageUrl} placeholder={labels.noImage} size="small" />
+                <Tile key={c.slug} href={catalogPaths.category(c.slug)} title={c.name} imageUrl={c.imageUrl} placeholder={noImage} size="small" />
               ))}
             </TileGrid>
           )}
@@ -42,7 +42,7 @@ export async function CategoryPage({ slug }: { slug: string }) {
             groups.map((group) => (
               <section key={group.category.slug} className="grid gap-6">
                 {isMain && <h2 className="border-b border-ink pb-3 text-2xl leading-tight">{group.category.name}</h2>}
-                <ProductGrid products={group.products} locale={locale} labels={labels} />
+                <ProductGrid products={group.products} locale={locale} />
               </section>
             ))
           ) : (

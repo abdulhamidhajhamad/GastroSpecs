@@ -1,4 +1,5 @@
 import type { Localized } from "@/shared/i18n/localized";
+import type { TechnicalSpecs } from "./product-specs";
 
 /** Read models of the catalog. Plain data: no ORM types, no HTTP concerns. */
 
@@ -44,11 +45,15 @@ export type ProductImage = {
 
 export type Product = {
   id: string;
+  /** Our product number, e.g. "GS-FRY-0001". */
+  code: string;
   slug: string;
   name: Localized;
   summary: Localized<string | null>;
   /** Always a subcategory. */
   category: CategoryRef;
+  technical: TechnicalSpecs;
+  /** Extra specs without their own column. */
   specs: Spec[];
   variants: ProductVariant[];
   images: ProductImage[];

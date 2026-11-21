@@ -4,7 +4,8 @@ import { SignOutButton } from "@/features/admin";
 /** Dashboard home. Access is checked by the dashboard layout (RequireAdmin). */
 const sections = [
   { href: "/admin/dashboard/agents", title: "AI agents", text: "The AI agents that work for GastroSpecs." },
-  { href: "/admin/dashboard/products", title: "Products", text: "Manage catalog items, specs and photos." },
+  { href: "/admin/dashboard/products", title: "Products", text: "Search by code or model, edit specs and photos, see every supplier's price." },
+  { href: "/admin/dashboard/suppliers", title: "Suppliers", text: "Companies we buy from, their contacts and our notes." },
   { href: "/admin/dashboard/categories", title: "Categories", text: "Group products shown on the public catalog." },
   { href: "/admin/dashboard/quotes", title: "Quote requests", text: "Leads submitted through the public site." },
   { href: "/admin/dashboard/users", title: "Admin users", text: "Who can sign in to this dashboard." },

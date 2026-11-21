@@ -280,6 +280,35 @@
       "equipmentEyebrow": "Equipment",
       "noProductsTitle": "Products coming soon",
       "noProductsText": "We are adding models, specifications and photos for this category. Ask us for a quote and we will send you the options directly."
+    },
+    "product": {
+      "code": "Code",
+      "quote": "Request a quote",
+      "exportWorldwide": "Export worldwide",
+      "shipping": "Shipped worldwide, factory direct. Ask for a quote with delivery to your country.",
+      "specsTitle": "Specifications",
+      "specs": {
+        "dimensions": "Dimensions (W × D × H)",
+        "energy": "Energy",
+        "power": "Power",
+        "heatInput": "Heat input",
+        "supply": "Electrical supply",
+        "current": "Current",
+        "weight": "Net weight"
+      },
+      "energy": {
+        "electric": "Electric",
+        "gas": "Gas",
+        "dual": "Gas + electric"
+      },
+      "gas": {
+        "lpg": "LPG",
+        "natural_gas": "Natural gas"
+      },
+      "phases": {
+        "1": "Single phase",
+        "3": "Three phase"
+      }
     }
   },
   "brand": {

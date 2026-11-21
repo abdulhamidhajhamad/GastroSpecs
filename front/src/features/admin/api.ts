@@ -4,13 +4,16 @@
  */
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
+/** Full URL of an API path, for things the browser loads itself (e.g. an <img> preview). */
+export const apiUrl = (path: string) => `${API_URL}/api${path}`;
+
 /** Mirrors PASSWORD_MIN_LENGTH in the backend's auth/domain/password-policy.ts. */
 export const PASSWORD_MIN_LENGTH = 10;
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; message: string };
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PUT" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   /** A plain object is sent as JSON; FormData is sent as a file upload. */
   body?: unknown;
 };
@@ -42,6 +45,8 @@ export async function apiRequest<T = void>(path: string, { method = "GET", body 
 }
 
 export const apiPost = <T = void>(path: string, body?: unknown) => apiRequest<T>(path, { method: "POST", body });
+export const apiPatch = (path: string, body: unknown) => apiRequest(path, { method: "PATCH", body });
+export const apiDelete = (path: string) => apiRequest(path, { method: "DELETE" });
 
 /** Message for a failed admin call; a 401 means the session expired. */
 export const failureMessage = (result: { status: number; message: string }) =>

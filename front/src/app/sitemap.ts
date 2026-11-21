@@ -12,14 +12,16 @@ const staticRoutes = ["", "/about", "/services", "/catalog"];
  * If the API is unreachable the sitemap still lists the fixed pages.
  */
 async function catalogRoutes(): Promise<string[]> {
-  const [businessTypes, categories] = await Promise.all([
+  const [businessTypes, categories, products] = await Promise.all([
     catalogApi.businessTypes(routing.defaultLocale),
     catalogApi.categories(routing.defaultLocale),
+    catalogApi.productSlugs(),
   ]);
 
   return [
     ...(businessTypes ?? []).map((b) => catalogPaths.businessType(b.slug)),
     ...(categories ?? []).flatMap((main) => [main, ...main.children].map((c) => catalogPaths.category(c.slug))),
+    ...(products ?? []).map((p) => catalogPaths.product(p.slug)),
   ];
 }
 
