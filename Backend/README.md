@@ -2,6 +2,10 @@
 
 NestJS + Prisma + PostgreSQL. Serves the public catalog and the admin API.
 
+NestJS 12 (ESM packages) in a CommonJS app: `tsconfig` uses `"module": "nodenext"`, and Node loads the ESM
+packages through `require(esm)`, so **Node 22.12 or newer** is required (pinned in `package.json` engines).
+TypeScript 6.
+
 ## Architecture
 
 Clean architecture per feature (vertical slice). Each module under `src/modules/<feature>/` has four layers:

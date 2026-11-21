@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { JwtModule } from "@nestjs/jwt";
+import { JwtModule, type JwtSignOptions } from "@nestjs/jwt";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ChangePasswordUseCase } from "./application/change-password.use-case";
@@ -26,7 +26,8 @@ import { SessionCookie } from "./presentation/session-cookie";
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>("JWT_SECRET"),
-        signOptions: { expiresIn: config.get<string>("JWT_EXPIRES_IN") ?? "7d" },
+        // A duration like "7d" or "12h" (or seconds as a number).
+        signOptions: { expiresIn: (config.get<string>("JWT_EXPIRES_IN") ?? "7d") as JwtSignOptions["expiresIn"] },
       }),
     }),
   ],

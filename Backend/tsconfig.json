@@ -1,13 +1,18 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    // NestJS 12 ships ESM only. "nodenext" lets this CommonJS app (no "type": "module") load it through
+    // Node's require(esm) (Node 20.19+ / 22.12+); every .ts file still compiles to CommonJS.
+    "module": "nodenext",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "moduleResolution": "node",
+    // TypeScript 6 no longer loads every @types package by itself: name the global ones we use.
+    "types": ["node", "multer"],
+    "moduleResolution": "nodenext",
+    // src/main.ts → dist/main.js, which Render runs.
+    "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "esModuleInterop": true,
     "experimentalDecorators": true,
