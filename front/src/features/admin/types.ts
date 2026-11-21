@@ -79,7 +79,7 @@ export type AdminCategoryNode = AdminCategory & { children: AdminCategory[] };
 
 // --- AI agents ---------------------------------------------------------------------------------------
 
-export type Agent = { name: string; title: string; description: string };
+export type Agent = { name: string; title: string; description: string; active: boolean };
 
 export type RunStatus = "idle" | "running" | "failed";
 

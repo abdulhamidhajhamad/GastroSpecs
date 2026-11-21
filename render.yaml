@@ -40,9 +40,8 @@ services:
         sync: false
       - key: R2_SECRET_ACCESS_KEY
         sync: false
-      # AI agents (ahmadprod): Claude Opus through OpenRouter. Without the key the API runs; agents can't reply.
-      - key: OPENROUTER_API_KEY
-        sync: false
+      # AI agent ahmadprod is off for now. To turn it on later, add OPENROUTER_API_KEY in the Render
+      # dashboard (Environment); no code change is needed.
       # Website forms are emailed to sales@gastrospecs.com through Resend. Without the key they are only saved.
       - key: RESEND_API_KEY
         sync: false

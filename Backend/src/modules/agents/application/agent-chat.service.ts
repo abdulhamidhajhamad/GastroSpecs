@@ -77,8 +77,10 @@ export class AgentChatService {
     private readonly storage: ObjectStorage,
   ) {}
 
+  /** `active` is false while the model key is missing: the agent is off and can't reply. */
   listAgents() {
-    return Object.values(AGENTS);
+    const active = this.model.isConfigured();
+    return Object.values(AGENTS).map((agent) => ({ ...agent, active }));
   }
 
   listConversations(agent: string) {

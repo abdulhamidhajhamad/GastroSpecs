@@ -20,10 +20,15 @@ export function AgentsPage() {
               <Link href={`/admin/dashboard/agents/${agent.name}`} className="group block h-full border border-ink/10 bg-paper p-6 transition-colors hover:border-ink/40">
                 <div className="flex items-start justify-between gap-4">
                   <h2 className="font-mono text-lg font-medium">{agent.name}</h2>
-                  <span className="mono-label bg-green-100 px-2 py-1 text-[0.6875rem] text-green-800">active</span>
+                  {agent.active ? (
+                    <span className="mono-label bg-green-100 px-2 py-1 text-[0.6875rem] text-green-800">active</span>
+                  ) : (
+                    <span className="mono-label bg-mist px-2 py-1 text-[0.6875rem] text-steel">off</span>
+                  )}
                 </div>
                 <p className="mono-label mt-1 text-xs text-steel">{agent.title}</p>
                 <p className="mt-3 text-sm text-muted">{agent.description}</p>
+                {!agent.active && <p className="mt-3 text-sm text-muted">Turned off: add OPENROUTER_API_KEY to the API&apos;s settings to turn it on.</p>}
                 <span className="mono-label mt-6 inline-block text-xs text-signal">Open chats →</span>
               </Link>
             </li>
