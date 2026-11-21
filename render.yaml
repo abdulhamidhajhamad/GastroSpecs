@@ -43,3 +43,6 @@ services:
       # AI agents (ahmadprod): Claude Opus through OpenRouter. Without the key the API runs; agents can't reply.
       - key: OPENROUTER_API_KEY
         sync: false
+      # Website forms are emailed to sales@gastrospecs.com through Resend. Without the key they are only saved.
+      - key: RESEND_API_KEY
+        sync: false

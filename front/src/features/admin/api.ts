@@ -2,10 +2,10 @@
  * API calls for the admin screens. The session is an httpOnly cookie set by the API on sign-in:
  * this code never sees the token, it only asks the browser to send cookies (`credentials: "include"`).
  */
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+import { apiUrl } from "@/shared/lib/api";
 
 /** Full URL of an API path, for things the browser loads itself (e.g. an <img> preview). */
-export const apiUrl = (path: string) => `${API_URL}/api${path}`;
+export { apiUrl };
 
 /** Mirrors PASSWORD_MIN_LENGTH in the backend's auth/domain/password-policy.ts. */
 export const PASSWORD_MIN_LENGTH = 10;
@@ -23,7 +23,7 @@ export async function apiRequest<T = void>(path: string, { method = "GET", body 
   const isForm = body instanceof FormData;
 
   try {
-    const res = await fetch(`${API_URL}/api${path}`, {
+    const res = await fetch(apiUrl(path), {
       method,
       credentials: "include",
       // For FormData the browser sets the multipart Content-Type (with its boundary) itself.

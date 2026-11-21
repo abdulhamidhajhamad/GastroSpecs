@@ -15,7 +15,8 @@
     "menu": "Open menu",
     "close": "Close menu",
     "switchLanguage": "عربي",
-    "skip": "Skip to content"
+    "skip": "Skip to content",
+    "contact": "Contact us"
   },
   "home": {
     "hero": {
@@ -179,11 +180,8 @@
     "eyebrow": "Start a project",
     "title": "Tell us about your project",
     "text": "Share your business type, location and what you need. We reply with the next step, usually a first layout or a quote.",
-    "whatsappCta": "Message us on WhatsApp",
-    "whatsappMessage": "Hello GastroSpecs, I'd like to discuss a project.",
     "comingSoon": "Coming soon",
     "channels": {
-      "whatsapp": "WhatsApp",
       "email": "Email",
       "markets": "Markets"
     },
@@ -199,7 +197,6 @@
       "business": "Business name",
       "submit": "Send request",
       "close": "Close",
-      "subject": "Quote request",
       "types": {
         "trader": "Equipment trader / distributor",
         "fastFood": "Fast food restaurant",
@@ -207,6 +204,22 @@
         "hotel": "Hotel or large kitchen",
         "other": "Other"
       }
+    },
+    "status": {
+      "sending": "Sending…",
+      "sentTitle": "Thank you",
+      "sentText": "We received your message and will get back to you shortly.",
+      "error": "We couldn't send it. Check your connection and try again, or email us at sales@gastrospecs.com.",
+      "done": "Close"
+    },
+    "message": {
+      "open": "Contact us",
+      "title": "Contact us",
+      "intro": "Leave your name, number and message, and we'll get back to you.",
+      "name": "Your name",
+      "phone": "Phone number",
+      "message": "Message",
+      "submit": "Send message"
     }
   },
   "services": {
@@ -360,8 +373,6 @@
     "summary": "Kitchen layouts, equipment specification and factory-direct sourcing for food businesses worldwide.",
     "explore": "Explore",
     "contact": "Contact",
-    "whatsapp": "WhatsApp",
-    "whatsappMessage": "Hello GastroSpecs, I'd like to discuss a project.",
     "email": "Email",
     "comingSoon": "Coming soon",
     "markets": "Markets",

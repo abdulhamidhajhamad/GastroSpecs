@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Post, UseGuards } from "@nestjs/common";
+import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
 import { JwtAuthGuard } from "@/modules/auth/presentation/jwt-auth.guard";
 import { CreateLeadDto } from "../application/dto/create-lead.dto";
 import { CreateLeadUseCase } from "../application/create-lead.use-case";
@@ -11,8 +12,11 @@ export class LeadsController {
     private readonly listLeads: ListLeadsUseCase,
   ) {}
 
-  /** Public: called by the site before a catalog PDF download or with a quote request. */
+  /** Public: the site's quote and contact forms (and catalog downloads). A few per minute per visitor, against spam. */
   @Post()
+  @HttpCode(201)
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   create(@Body() body: CreateLeadDto) {
     return this.createLead.execute(body);
   }

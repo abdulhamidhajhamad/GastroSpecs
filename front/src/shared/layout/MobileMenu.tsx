@@ -4,17 +4,18 @@ import NextLink from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/shared/lib/cn";
 import { pad } from "@/shared/lib/format";
-import { QuoteButton } from "@/shared/sections/QuoteButton";
+import { ContactButton, QuoteButton } from "@/shared/sections/QuoteButton";
 import type { NavLink } from "./nav";
 import { SoonTag } from "./SoonTag";
 
 type MobileMenuProps = {
   links: NavLink[];
   quoteLabel: string;
+  contactLabel: string;
   labels: { open: string; close: string; soon: string };
 };
 
-export function MobileMenu({ links, quoteLabel, labels }: MobileMenuProps) {
+export function MobileMenu({ links, quoteLabel, contactLabel, labels }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -77,9 +78,14 @@ export function MobileMenu({ links, quoteLabel, labels }: MobileMenuProps) {
               </li>
             ))}
           </ul>
-          <QuoteButton onClick={close} className="mt-auto w-full">
-            {quoteLabel}
-          </QuoteButton>
+          <div className="mt-auto grid gap-3 pt-8">
+            <ContactButton variant="outline" onClick={close} className="w-full">
+              {contactLabel}
+            </ContactButton>
+            <QuoteButton onClick={close} className="w-full">
+              {quoteLabel}
+            </QuoteButton>
+          </div>
         </nav>
       </div>
     </div>

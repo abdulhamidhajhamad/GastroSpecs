@@ -5,6 +5,7 @@ export { CategoryImages } from "./components/CategoryImages";
 export { ChangePasswordForm } from "./components/ChangePasswordForm";
 export { ProductEditor } from "./components/products/ProductEditor";
 export { ProductsPage } from "./components/products/ProductsPage";
+export { RequestsPage } from "./components/requests/RequestsPage";
 export { RequireAdmin } from "./components/RequireAdmin";
 export { SignInForm } from "./components/SignInForm";
 export { SignOutButton } from "./components/SignOutButton";

@@ -143,3 +143,16 @@ export type Conversation = {
   messages: ChatMessage[];
   plans: AgentPlan[];
 };
+
+/** A request sent through the public site's forms. */
+export type Lead = {
+  id: string;
+  source: "quote" | "contact" | "catalog_download";
+  name: string | null;
+  company: string | null;
+  projectType: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string | null;
+  createdAt: string;
+};

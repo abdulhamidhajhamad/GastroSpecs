@@ -2,9 +2,9 @@
 
 import type { ReactNode } from "react";
 import { ctaClass } from "@/shared/ui/ButtonLink";
-import { useQuote } from "./QuoteProvider";
+import { type LeadKind, useLeadDialog } from "./LeadDialogs";
 
-type QuoteButtonProps = {
+type DialogButtonProps = {
   children: ReactNode;
   className?: string;
   variant?: "primary" | "outline" | "outlineDark";
@@ -13,9 +13,8 @@ type QuoteButtonProps = {
   onClick?: () => void;
 };
 
-/** Opens the quote popup in place (no scroll). Works anywhere under <QuoteProvider>. */
-export function QuoteButton({ children, className, variant = "primary", size = "md", onClick }: QuoteButtonProps) {
-  const open = useQuote();
+function DialogButton({ kind, children, className, variant = "primary", size = "md", onClick }: DialogButtonProps & { kind: LeadKind }) {
+  const open = useLeadDialog(kind);
   return (
     <button
       type="button"
@@ -29,3 +28,9 @@ export function QuoteButton({ children, className, variant = "primary", size = "
     </button>
   );
 }
+
+/** Opens the quote popup in place (no scroll). Works anywhere under <LeadDialogs>. */
+export const QuoteButton = (props: DialogButtonProps) => <DialogButton kind="quote" {...props} />;
+
+/** Opens the "Contact us" popup (name, phone, message). Works anywhere under <LeadDialogs>. */
+export const ContactButton = (props: DialogButtonProps) => <DialogButton kind="contact" {...props} />;

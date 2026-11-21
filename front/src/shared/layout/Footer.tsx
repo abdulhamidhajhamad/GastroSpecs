@@ -2,7 +2,7 @@ import NextLink from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { siteConfig } from "@/shared/config/site";
 import { Wordmark } from "@/shared/brand/Logo";
-import { emailHref, whatsappHref } from "@/shared/lib/contact";
+import { emailHref } from "@/shared/lib/contact";
 import { Container } from "@/shared/ui/Container";
 import { buildNav } from "./nav";
 import { SoonTag } from "./SoonTag";
@@ -15,7 +15,6 @@ export async function Footer() {
   ]);
 
   const contacts = [
-    { label: t("whatsapp"), value: siteConfig.contact.whatsapp, href: whatsappHref(t("whatsappMessage")) },
     { label: t("email"), value: siteConfig.contact.email, href: emailHref() },
   ];
 

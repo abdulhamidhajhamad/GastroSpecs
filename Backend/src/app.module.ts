@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from "./shared/prisma/prisma.module";
+import { MailModule } from "./shared/mail/mail.module";
 import { StorageModule } from "./shared/storage/storage.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { CatalogModule } from "./modules/catalog/catalog.module";
@@ -19,6 +20,7 @@ import { AgentsModule } from "./modules/agents/agents.module";
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     StorageModule,
+    MailModule,
     AuthModule,
     CatalogModule,
     LeadsModule,

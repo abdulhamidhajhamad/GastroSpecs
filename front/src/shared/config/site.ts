@@ -1,7 +1,6 @@
 /**
  * Single source of truth for company-wide settings.
- * Contact values are intentionally empty until they are confirmed;
- * components hide or show a "coming soon" state when a value is empty.
+ * Contact values left empty show a "coming soon" state instead.
  */
 export const siteConfig = {
   name: "GastroSpecs",
@@ -9,11 +8,8 @@ export const siteConfig = {
   /** Where uploaded catalog images are served from (Cloudflare R2). Same value as R2_PUBLIC_URL in the backend. */
   mediaUrl: process.env.NEXT_PUBLIC_MEDIA_URL ?? "https://media.gastrospecs.com",
   contact: {
-    /** International format without "+" or spaces, e.g. "9665XXXXXXXX". */
-    whatsapp: "",
-    email: "",
-    /** Where the "Request a quote" form sends submissions. Set this to start receiving requests. */
-    bookingEmail: "",
+    /** The one address shown to visitors. The site's forms reach it through the API (LEADS_EMAIL_TO). */
+    email: "sales@gastrospecs.com",
   },
 } as const;
 

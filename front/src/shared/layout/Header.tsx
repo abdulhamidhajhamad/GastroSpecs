@@ -2,7 +2,7 @@ import NextLink from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Wordmark } from "@/shared/brand/Logo";
-import { QuoteButton } from "@/shared/sections/QuoteButton";
+import { ContactButton, QuoteButton } from "@/shared/sections/QuoteButton";
 import { Container } from "@/shared/ui/Container";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 import { MobileMenu } from "./MobileMenu";
@@ -40,12 +40,16 @@ export async function Header() {
 
         <div className="flex items-center gap-2 sm:gap-4">
           <LocaleSwitcher label={t("switchLanguage")} />
+          <ContactButton variant="outline" size="sm" className="hidden lg:inline-flex">
+            {t("contact")}
+          </ContactButton>
           <QuoteButton size="sm" className="hidden sm:inline-flex">
             {t("quote")}
           </QuoteButton>
           <MobileMenu
             links={links}
             quoteLabel={t("quote")}
+            contactLabel={t("contact")}
             labels={{ open: t("menu"), close: t("close"), soon: t("soon") }}
           />
         </div>

@@ -13,6 +13,10 @@ function toLead(row: LeadRow): Lead {
     email: row.email,
     phone: row.phone,
     source: row.source,
+    name: row.name,
+    company: row.company,
+    projectType: row.projectType,
+    message: row.message,
     businessType: row.businessType && { slug: row.businessType.slug, name: row.businessType.nameEn },
     createdAt: row.createdAt,
   };
@@ -29,7 +33,16 @@ export class PrismaLeadRepository implements LeadRepository {
       : null;
 
     const row = await this.prisma.lead.create({
-      data: { email: lead.email, phone: lead.phone, source: lead.source, businessTypeId: businessType?.id },
+      data: {
+        email: lead.email,
+        phone: lead.phone,
+        source: lead.source,
+        name: lead.name,
+        company: lead.company,
+        projectType: lead.projectType,
+        message: lead.message,
+        businessTypeId: businessType?.id,
+      },
       include: leadInclude,
     });
     return toLead(row);

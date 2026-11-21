@@ -260,6 +260,7 @@ model SupplierProduct {
 enum LeadSource {
   catalog_download
   quote
+  contact
 }
 
 /// A visitor who left contact details (catalog PDF download or quote request).
@@ -268,6 +269,11 @@ model Lead {
   email          String?
   phone          String?
   source         LeadSource
+  name           String?
+  /// Quote requests: the customer's business name and what they are building.
+  company        String?
+  projectType    String?
+  message        String?
   businessTypeId String?
   businessType   BusinessType? @relation(fields: [businessTypeId], references: [id], onDelete: SetNull)
   createdAt      DateTime      @default(now())

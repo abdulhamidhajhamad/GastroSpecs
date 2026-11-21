@@ -8,8 +8,8 @@ import { fontVariables } from "@/shared/config/fonts";
 import { siteConfig } from "@/shared/config/site";
 import { Footer } from "@/shared/layout/Footer";
 import { Header } from "@/shared/layout/Header";
-import { QuoteProvider } from "@/shared/sections/QuoteProvider";
-import { projectTypes } from "@/shared/sections/quote";
+import { LeadDialogs } from "@/shared/sections/LeadDialogs";
+import { type LeadDialogsConfig, projectTypes } from "@/shared/sections/quote";
 import "../globals.css";
 
 type LayoutProps = { children: ReactNode; params: Promise<{ locale: string }> };
@@ -38,23 +38,37 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
   const locale = assertLocale((await params).locale);
   setRequestLocale(locale);
 
-  const [t, tf] = await Promise.all([getTranslations("nav"), getTranslations("contact.form")]);
+  const [t, tc] = await Promise.all([getTranslations("nav"), getTranslations("contact")]);
 
-  // One quote dialog for the whole app; every "Request a quote" button opens it in place.
-  const quoteConfig = {
-    email: siteConfig.contact.bookingEmail,
-    subject: tf("subject"),
-    types: projectTypes.map((key) => ({ value: key, label: tf(`types.${key}`) })),
-    labels: {
-      title: tf("title"),
-      intro: tf("intro"),
-      email: tf("email"),
-      phone: tf("phone"),
-      type: tf("type"),
-      typePlaceholder: tf("typePlaceholder"),
-      business: tf("business"),
-      submit: tf("submit"),
-      close: tf("close"),
+  // The quote and "Contact us" popups, mounted once; every button opens them in place.
+  const dialogs: LeadDialogsConfig = {
+    locale,
+    close: tc("form.close"),
+    status: {
+      sending: tc("status.sending"),
+      sentTitle: tc("status.sentTitle"),
+      sentText: tc("status.sentText"),
+      error: tc("status.error"),
+      done: tc("status.done"),
+    },
+    quote: {
+      title: tc("form.title"),
+      intro: tc("form.intro"),
+      email: tc("form.email"),
+      phone: tc("form.phone"),
+      type: tc("form.type"),
+      typePlaceholder: tc("form.typePlaceholder"),
+      types: projectTypes.map((key) => ({ value: key, label: tc(`form.types.${key}`) })),
+      business: tc("form.business"),
+      submit: tc("form.submit"),
+    },
+    contact: {
+      title: tc("message.title"),
+      intro: tc("message.intro"),
+      name: tc("message.name"),
+      phone: tc("message.phone"),
+      message: tc("message.message"),
+      submit: tc("message.submit"),
     },
   };
 
@@ -63,7 +77,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
       <body>
         {/* messages={null}: client components get their strings as props, so no dictionary is shipped to the browser. */}
         <NextIntlClientProvider messages={null}>
-          <QuoteProvider config={quoteConfig}>
+          <LeadDialogs config={dialogs}>
             <a
               href="#main"
               className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[60] focus:bg-paper focus:px-4 focus:py-2 focus:text-ink"
@@ -73,7 +87,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps) {
             <Header />
             <main id="main">{children}</main>
             <Footer />
-          </QuoteProvider>
+          </LeadDialogs>
         </NextIntlClientProvider>
       </body>
     </html>
