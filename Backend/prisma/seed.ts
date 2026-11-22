@@ -16,11 +16,20 @@ const prisma = new PrismaClient();
 type Name = { slug: string; en: string; ar: string };
 
 /**
- * Main categories in display order: the big, high-value equipment first (cooking, frying, dishwashing,
+ * Main categories in display order: butchery first (our lead line), then the big, high-value equipment (cooking, frying, dishwashing,
  * refrigeration), small preparation items last. Each with its subcategories and the code prefix
  * of its products (e.g. "FRY" → GS-FRY-0001). Never change a prefix once products use it.
  */
 const categories: Array<Name & { code: string; children: Name[] }> = [
+  {
+    slug: "butchery", code: "BCH", en: "Butchery", ar: "معدات الملاحم",
+    children: [
+      { slug: "bone-saws", en: "Bone saws", ar: "مناشير عظم" },
+      { slug: "mincers", en: "Mincers", ar: "فرّامات" },
+      { slug: "bowl-cutters", en: "Bowl cutters", ar: "كترات" },
+      { slug: "sausage-machines", en: "Sausage machines", ar: "ماكينات نقانق" },
+    ],
+  },
   {
     slug: "cooking", code: "COK", en: "Cooking", ar: "معدات الطبخ",
     children: [
@@ -80,15 +89,6 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "work-tables", en: "Work tables", ar: "طاولات عمل" },
       { slug: "shelving", en: "Shelving", ar: "رفوف" },
       { slug: "hoods", en: "Extraction hoods", ar: "شفّاطات" },
-    ],
-  },
-  {
-    slug: "butchery", code: "BCH", en: "Butchery", ar: "معدات الملاحم",
-    children: [
-      { slug: "bone-saws", en: "Bone saws", ar: "مناشير عظم" },
-      { slug: "mincers", en: "Mincers", ar: "فرّامات" },
-      { slug: "bowl-cutters", en: "Bowl cutters", ar: "كترات" },
-      { slug: "sausage-machines", en: "Sausage machines", ar: "ماكينات نقانق" },
     ],
   },
   {
