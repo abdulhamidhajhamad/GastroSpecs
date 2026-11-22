@@ -64,7 +64,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
     children: [
       { slug: "gelato-showcases", en: "Gelato showcases", ar: "واجهات جيلاتو" },
       { slug: "pastry-displays", en: "Pastry displays", ar: "واجهات حلويات" },
-      { slug: "meat-counters", en: "Meat counters", ar: "واجهات لحوم" },
+      { slug: "meat-counters", en: "Refrigerated displays", ar: "واجهات عرض مبردة" },
     ],
   },
   {
@@ -83,17 +83,30 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
     ],
   },
   {
+    slug: "butchery", code: "BCH", en: "Butchery", ar: "معدات الملاحم",
+    children: [
+      { slug: "bone-saws", en: "Bone saws", ar: "مناشير عظم" },
+      { slug: "mincers", en: "Mincers", ar: "فرّامات" },
+      { slug: "bowl-cutters", en: "Bowl cutters", ar: "كترات" },
+      { slug: "sausage-machines", en: "Sausage machines", ar: "ماكينات نقانق" },
+    ],
+  },
+  {
     slug: "preparation", code: "PRP", en: "Preparation", ar: "التحضير",
     children: [
       { slug: "mixers", en: "Mixers", ar: "عجّانات" },
-      { slug: "mincers", en: "Mincers", ar: "فرّامات" },
       { slug: "slicers", en: "Slicers", ar: "قطّاعات" },
       { slug: "breading-tables", en: "Breading tables", ar: "طاولات تتبيل" },
+      { slug: "potato-peelers", en: "Potato peelers", ar: "مقشرات بطاطا" },
+      { slug: "vegetable-cutters", en: "Vegetable cutters", ar: "قطّاعات خضار" },
+      { slug: "vegetable-dryers", en: "Spin dryers", ar: "مجففات خضار" },
+      { slug: "vegetable-washers", en: "Vegetable washers", ar: "غسالات خضار" },
+      { slug: "soy-milk-machines", en: "Soy milk machines", ar: "ماكينات حليب الصويا" },
     ],
   },
 ];
 
-/** Each venue with the subcategories (slugs) shown on its page. A starting point; adjust per real projects. */
+/** Each venue with the subcategories (slugs) shown on its page, in the order they appear there. */
 const businessTypes: Array<Name & { categories: string[] }> = [
   {
     slug: "fried-chicken", en: "Fried chicken", ar: "مطاعم البروستد",
@@ -121,7 +134,7 @@ const businessTypes: Array<Name & { categories: string[] }> = [
   },
   {
     slug: "butchery", en: "Butchery", ar: "الملاحم",
-    categories: ["mincers", "slicers", "refrigerators", "freezers", "cold-rooms", "meat-counters", "sinks", "work-tables"],
+    categories: ["bone-saws", "mincers", "meat-counters", "work-tables", "sinks", "freezers", "cold-rooms"],
   },
   {
     slug: "supermarket", en: "Supermarket", ar: "السوبرماركت",
@@ -153,7 +166,7 @@ async function seedCategories() {
   }
 }
 
-/** Upserts each venue and adds its missing category links. Existing links are left alone. */
+/** Upserts each venue and makes its category links match the list above: same categories, same order. */
 async function seedBusinessTypes() {
   const categoryIds = new Map((await prisma.category.findMany({ select: { id: true, slug: true } })).map((c) => [c.slug, c.id]));
 
@@ -161,12 +174,21 @@ async function seedBusinessTypes() {
     const data = { nameEn: type.en, nameAr: type.ar, sortOrder: i + 1 };
     const row = await prisma.businessType.upsert({ where: { slug: type.slug }, update: data, create: { slug: type.slug, ...data } });
 
-    const links = type.categories.map((slug) => {
+    const ids = type.categories.map((slug) => {
       const categoryId = categoryIds.get(slug);
       if (!categoryId) throw new Error(`Business type "${type.slug}" lists unknown category "${slug}"`);
-      return { businessTypeId: row.id, categoryId };
+      return categoryId;
     });
-    await prisma.businessTypeCategory.createMany({ data: links, skipDuplicates: true });
+    await prisma.$transaction([
+      prisma.businessTypeCategory.deleteMany({ where: { businessTypeId: row.id, categoryId: { notIn: ids } } }),
+      ...ids.map((categoryId, position) =>
+        prisma.businessTypeCategory.upsert({
+          where: { businessTypeId_categoryId: { businessTypeId: row.id, categoryId } },
+          update: { sortOrder: position + 1 },
+          create: { businessTypeId: row.id, categoryId, sortOrder: position + 1 },
+        }),
+      ),
+    ]);
   }
 }
 

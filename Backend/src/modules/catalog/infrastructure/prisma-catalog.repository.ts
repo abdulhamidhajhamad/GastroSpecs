@@ -7,6 +7,8 @@ import type { BusinessType, BusinessTypeWithCategories, CategoryNode, CategoryRe
 import { catalogMapper, productCardInclude, productInclude } from "./catalog.mapper";
 
 const bySortOrder = { sortOrder: "asc" } as const;
+/** A venue's equipment in the venue's own order; ties (links without a position) follow the catalog order. */
+const venueOrder = [{ sortOrder: "asc" }, { category: bySortOrder }] as const satisfies Prisma.BusinessTypeCategoryOrderByWithRelationInput[];
 const withChildren = { children: { orderBy: bySortOrder } } as const satisfies Prisma.CategoryInclude;
 type CategoryWithChildren = Prisma.CategoryGetPayload<{ include: typeof withChildren }>;
 
@@ -37,17 +39,18 @@ export class PrismaCatalogRepository implements CatalogRepository {
   }
 
   async listBusinessTypeCategories(slug: string): Promise<CategoryRef[]> {
-    const rows = await this.prisma.category.findMany({
-      where: { businessTypes: { some: { businessType: { slug } } } },
-      orderBy: bySortOrder,
+    const links = await this.prisma.businessTypeCategory.findMany({
+      where: { businessType: { slug } },
+      orderBy: venueOrder,
+      include: { category: true },
     });
-    return rows.map(this.map.toCategoryRef);
+    return links.map((link) => this.map.toCategoryRef(link.category));
   }
 
   async listBusinessTypes(): Promise<BusinessTypeWithCategories[]> {
     const rows = await this.prisma.businessType.findMany({
       orderBy: bySortOrder,
-      include: { categories: { include: { category: true }, orderBy: { category: bySortOrder } } },
+      include: { categories: { include: { category: true }, orderBy: venueOrder } },
     });
     return rows.map((row) => ({
       ...this.map.toBusinessType(row),

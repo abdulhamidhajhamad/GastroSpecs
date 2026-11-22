@@ -84,6 +84,8 @@ model BusinessTypeCategory {
   businessType   BusinessType @relation(fields: [businessTypeId], references: [id], onDelete: Cascade)
   categoryId     String
   category       Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  /// Position on this venue's page (each venue orders its equipment its own way, e.g. butchery: saws first).
+  sortOrder      Int          @default(0)
 
   @@id([businessTypeId, categoryId])
   @@index([categoryId])
