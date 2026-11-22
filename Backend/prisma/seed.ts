@@ -134,7 +134,7 @@ const businessTypes: Array<Name & { categories: string[] }> = [
   },
   {
     slug: "butchery", en: "Butchery", ar: "الملاحم",
-    categories: ["bone-saws", "mincers", "meat-counters", "work-tables", "sinks", "freezers", "cold-rooms"],
+    categories: ["bone-saws", "mincers", "bowl-cutters", "sausage-machines", "meat-counters", "work-tables", "sinks", "freezers", "cold-rooms"],
   },
   {
     slug: "supermarket", en: "Supermarket", ar: "السوبرماركت",
