@@ -3,9 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { siteConfig } from "@/shared/config/site";
 import { ContactCta } from "@/shared/sections/ContactCta";
 import { QuoteButton } from "@/shared/sections/QuoteButton";
-import { Photo } from "@/shared/ui/Photo";
 import { Section } from "@/shared/ui/Section";
 import { BackLink } from "./components/BackLink";
+import { ProductGallery } from "./components/ProductGallery";
 import { catalogApi } from "./data/source";
 import type { Product } from "./data/types";
 import { catalogPaths } from "./paths";
@@ -34,7 +34,6 @@ export async function ProductPage({ slug }: { slug: string }) {
   const [t, tg, product] = await Promise.all([getTranslations("catalog.product"), getTranslations("catalog.grid"), catalogApi.product(slug, locale)]);
   if (!product) notFound();
 
-  const [main, ...more] = product.images;
   const specs = allSpecLines(product, t);
   const badges = [...product.technical.certifications, t("exportWorldwide")];
 
@@ -45,22 +44,13 @@ export async function ProductPage({ slug }: { slug: string }) {
         <BackLink href={catalogPaths.category(product.category.slug)} label={product.category.name} />
 
         <div className="mt-8 grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="grid gap-4 lg:col-span-7">
-            <div className="relative aspect-square overflow-hidden border border-ink/10 bg-white">
-              {main ? (
-                <Photo src={main.url} alt={main.alt} fill priority sizes="(min-width: 1024px) 55vw, 100vw" className="object-contain p-8" />
-              ) : (
-                <span className="mono-label absolute inset-0 grid place-items-center bg-mist text-xs text-steel">{tg("noImage")}</span>
-              )}
-            </div>
-            {more.length > 0 && (
-              <ul className="grid grid-cols-4 gap-4">
-                {more.map((image) => (
-                  <li key={image.url} className="relative aspect-square overflow-hidden border border-ink/10 bg-white">
-                    <Photo src={image.url} alt={image.alt} fill sizes="(min-width: 1024px) 12vw, 25vw" className="object-contain p-2" />
-                  </li>
-                ))}
-              </ul>
+          <div className="lg:col-span-7">
+            {product.images.length ? (
+              <ProductGallery images={product.images} labels={{ previous: t("gallery.previous"), next: t("gallery.next"), show: t("gallery.show") }} />
+            ) : (
+              <div className="relative aspect-square border border-ink/10 bg-mist">
+                <span className="mono-label absolute inset-0 grid place-items-center text-xs text-steel">{tg("noImage")}</span>
+              </div>
             )}
           </div>
 
@@ -84,6 +74,8 @@ export async function ProductPage({ slug }: { slug: string }) {
           </div>
         </div>
 
+        {product.variants.length > 0 && <SizesTable variants={product.variants} title={t("sizesTitle")} model={t("model")} />}
+
         {specs.length > 0 && (
           <section className="mt-16 lg:mt-24">
             <h2 className="border-b border-ink pb-3 text-2xl">{t("specsTitle")}</h2>
@@ -102,5 +94,43 @@ export async function ProductPage({ slug }: { slug: string }) {
       </Section>
       <ContactCta />
     </>
+  );
+}
+
+/** Every size of the series, one row each (largest first, as stored); columns are the specs the sizes share. */
+function SizesTable({ variants, title, model }: { variants: Product["variants"]; title: string; model: string }) {
+  const columns = [...new Set(variants.flatMap((v) => v.specs.map((s) => s.label)))];
+  return (
+    <section className="mt-16 lg:mt-24">
+      <h2 className="border-b border-ink pb-3 text-2xl">{title}</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[36rem] text-sm">
+          <thead>
+            <tr className="border-line border-b text-start">
+              <th className="mono-label py-3 pe-6 text-start text-xs font-normal text-muted">{model}</th>
+              {columns.map((c) => (
+                <th key={c} className="mono-label py-3 pe-6 text-start text-xs font-normal text-muted">
+                  {c}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {variants.map((v) => (
+              <tr key={v.label} className="border-line border-b">
+                <td className="py-4 pe-6 font-medium" dir="ltr">
+                  {v.label}
+                </td>
+                {columns.map((c) => (
+                  <td key={c} className="py-4 pe-6" dir="ltr">
+                    {v.specs.find((s) => s.label === c)?.value ?? "—"}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

@@ -58,6 +58,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "refrigerators", en: "Refrigerators", ar: "ثلاجات" },
       { slug: "freezers", en: "Freezers", ar: "فريزرات" },
       { slug: "cold-rooms", en: "Cold rooms", ar: "غرف تبريد" },
+      { slug: "blast-freezers", en: "Blast freezers", ar: "فريزرات تجميد سريع" },
     ],
   },
   {
@@ -74,6 +75,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "gelato-showcases", en: "Gelato showcases", ar: "واجهات جيلاتو" },
       { slug: "pastry-displays", en: "Pastry displays", ar: "واجهات حلويات" },
       { slug: "meat-counters", en: "Refrigerated displays", ar: "واجهات عرض مبردة" },
+      { slug: "gelato-carts", en: "Gelato carts", ar: "عربات جيلاتو" },
     ],
   },
   {
@@ -130,7 +132,7 @@ const businessTypes: Array<Name & { categories: string[] }> = [
   },
   {
     slug: "gelato", en: "Gelato & pastry", ar: "الجيلاتو والحلويات",
-    categories: ["mixers", "convection-ovens", "refrigerators", "freezers", "gelato-showcases", "pastry-displays", "sinks", "work-tables"],
+    categories: ["gelato-showcases", "gelato-carts", "pastry-displays", "blast-freezers", "freezers", "mixers", "convection-ovens", "refrigerators", "sinks", "work-tables"],
   },
   {
     slug: "butchery", en: "Butchery", ar: "الملاحم",

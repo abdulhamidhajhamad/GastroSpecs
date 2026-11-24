@@ -321,6 +321,13 @@
       "phases": {
         "1": "Single phase",
         "3": "Three phase"
+      },
+      "sizesTitle": "Available sizes",
+      "model": "Model",
+      "gallery": {
+        "previous": "Previous photo",
+        "next": "Next photo",
+        "show": "Show photo"
       }
     }
   },
