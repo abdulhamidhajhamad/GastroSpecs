@@ -65,13 +65,21 @@ export class PrismaCatalogRepository implements CatalogRepository {
 
   async listProductsByCategory(slug: string): Promise<Product[]> {
     // Categories are two levels deep, so "the category or its parent" covers both cases without recursion.
+    const inTree = { OR: [{ slug }, { parent: { slug } }] } satisfies Prisma.CategoryWhereInput;
     const rows = await this.prisma.product.findMany({
-      where: { published: true, category: { OR: [{ slug }, { parent: { slug } }] } },
+      // Its own category, or a category that also lists it.
+      where: { published: true, OR: [{ category: inTree }, { extraCategories: { some: { category: inTree } } }] },
       // Biggest, most powerful machines first; the name only breaks ties.
       orderBy: [{ displayRank: "desc" }, { nameEn: "asc" }],
-      include: productCardInclude,
+      include: { ...productCardInclude, extraCategories: { where: { category: inTree }, include: { category: true } } },
     });
-    return rows.map(this.map.toProduct);
+    // A product listed here through an extra category is shown in that category's group.
+    const ownHere = new Set((await this.prisma.category.findMany({ where: inTree, select: { id: true } })).map((c) => c.id));
+    return rows.map((row) => {
+      const product = this.map.toProduct(row);
+      const extra = row.extraCategories[0]?.category;
+      return ownHere.has(row.categoryId) || !extra ? product : { ...product, category: this.map.toCategoryRef(extra) };
+    });
   }
 
   async findProduct(slug: string): Promise<Product | null> {

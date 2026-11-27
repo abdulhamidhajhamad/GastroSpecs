@@ -51,6 +51,8 @@ model Category {
   parent        Category?              @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
   children      Category[]             @relation("CategoryTree")
   products      Product[]
+  /// Products whose home is another category but that are also listed here.
+  alsoListed    ProductExtraCategory[]
   businessTypes BusinessTypeCategory[]
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
@@ -108,10 +110,10 @@ enum GasType {
 /// (see SupplierProduct). Key specs are real columns so the catalog can sort and filter by them;
 /// anything else goes into `specs`.
 model Product {
-  id                    String            @id @default(uuid())
+  id                    String                 @id @default(uuid())
   /// Our own product number, e.g. "GS-FRY-0001". Never a supplier's model code.
-  code                  String            @unique
-  slug                  String            @unique
+  code                  String                 @unique
+  slug                  String                 @unique
   nameEn                String
   nameAr                String
   summaryEn             String?
@@ -134,20 +136,22 @@ model Product {
   frequencyHz           Int?
   currentAmps           Float?
   /// True when currentAmps was calculated from power and voltage instead of read from the supplier.
-  currentAmpsCalculated Boolean           @default(false)
+  currentAmpsCalculated Boolean                @default(false)
   /// e.g. ["CE"]. Shown on the product page.
   certifications        String[]
   /// Higher shows first inside a category: the biggest, most powerful machines lead.
-  displayRank           Int               @default(0)
+  displayRank           Int                    @default(0)
   /// Hidden from the public site until true, so a product can be prepared first.
-  published             Boolean           @default(false)
+  published             Boolean                @default(false)
   categoryId            String
-  category              Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  category              Category               @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   variants              ProductVariant[]
   images                ProductImage[]
   suppliers             SupplierProduct[]
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  /// Other subcategories that list this product too (e.g. a bowl cutter also under Food processors).
+  extraCategories       ProductExtraCategory[]
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
 
   @@index([categoryId, displayRank])
   @@index([published])
@@ -353,4 +357,16 @@ model AgentPlan {
 
   @@index([conversationId, createdAt])
   @@map("agent_plans")
+}
+
+/// A product listed in a second subcategory besides its own. Its code, page and back link follow its own category.
+model ProductExtraCategory {
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, categoryId])
+  @@index([categoryId])
+  @@map("product_extra_categories")
 }
