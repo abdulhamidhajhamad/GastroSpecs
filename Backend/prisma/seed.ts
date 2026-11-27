@@ -36,6 +36,11 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "cooking-lines", en: "Cooking lines", ar: "خطوط طبخ" },
       { slug: "grills", en: "Grills", ar: "شوايات" },
       { slug: "griddles", en: "Griddles", ar: "صاجات" },
+      { slug: "hotplates", en: "Hotplates & stock pot stoves", ar: "مواقد وقدور" },
+      { slug: "wok-ranges", en: "Wok ranges", ar: "طباخات ووك" },
+      { slug: "pasta-cookers", en: "Pasta cookers", ar: "سلاقات باستا" },
+      { slug: "salamanders", en: "Salamanders & cheesemelters", ar: "سلمندر وذوّابات جبنة" },
+      { slug: "countertop-appliances", en: "Toasters, panini & waffle", ar: "محامص وشوايات باني ني ووافل" },
     ],
   },
   {
@@ -67,6 +72,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "convection-ovens", en: "Convection ovens", ar: "أفران كونفكشن" },
       { slug: "combi-ovens", en: "Combi ovens", ar: "أفران كومبي" },
       { slug: "rack-ovens", en: "Rack ovens", ar: "أفران دوّارة" },
+      { slug: "pizza-ovens", en: "Pizza ovens", ar: "أفران بيتزا" },
     ],
   },
   {
