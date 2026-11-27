@@ -28,6 +28,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "mincers", en: "Mincers", ar: "فرّامات" },
       { slug: "bowl-cutters", en: "Bowl cutters", ar: "كترات" },
       { slug: "sausage-machines", en: "Sausage machines", ar: "ماكينات نقانق" },
+      { slug: "kebab-knives", en: "Kebab knives", ar: "سكاكين شاورما كهربائية" },
     ],
   },
   {
@@ -40,7 +41,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "wok-ranges", en: "Wok ranges", ar: "طباخات ووك" },
       { slug: "pasta-cookers", en: "Pasta cookers", ar: "سلاقات باستا" },
       { slug: "salamanders", en: "Salamanders & cheesemelters", ar: "سلمندر وذوّابات جبنة" },
-      { slug: "countertop-appliances", en: "Toasters, panini & waffle", ar: "محامص وشوايات باني ني ووافل" },
+      { slug: "countertop-appliances", en: "Toasters", ar: "محامص خبز" },
     ],
   },
   {
@@ -107,6 +108,7 @@ const categories: Array<Name & { code: string; children: Name[] }> = [
       { slug: "breading-tables", en: "Breading tables", ar: "طاولات تتبيل" },
       { slug: "potato-peelers", en: "Potato peelers", ar: "مقشرات بطاطا" },
       { slug: "vegetable-cutters", en: "Vegetable cutters", ar: "قطّاعات خضار" },
+      { slug: "food-processors", en: "Food processors", ar: "محضّرات طعام" },
       { slug: "vegetable-dryers", en: "Spin dryers", ar: "مجففات خضار" },
       { slug: "vegetable-washers", en: "Vegetable washers", ar: "غسالات خضار" },
       { slug: "soy-milk-machines", en: "Soy milk machines", ar: "ماكينات حليب الصويا" },
